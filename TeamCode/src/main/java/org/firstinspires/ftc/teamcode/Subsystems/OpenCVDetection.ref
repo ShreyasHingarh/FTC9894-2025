@@ -1,0 +1,155 @@
+package org.firstinspires.ftc.teamcode.Subsystems;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Enums.Color;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Config
+public class OpenCVDetection {
+    private OpenCvCamera BackCamera;
+    public static final int CAMERA_WIDTH = 800; // width  of wanted camera resolution
+    private static final int CAMERA_HEIGHT = 448; // height of wanted camera resolution
+    public static int BlueMax = 255;
+    public static int GreenMax = 255;
+    public static int RedMax = 160;
+    public static int BlueMin = 255;
+    public static int GreenMin = 255;
+    public static int RedMin = 0;
+    public static int BlurKernelSize = 5;
+    public Point[] rectPoints = new Point[4];
+    public static int Area = 6000;
+    // TODO: Want to be able to detect the blocks position and use it to move the robot accordingly to
+    //      get it in the center of the frame
+    public OpenCVDetection(HardwareMap hardwareMap, Telemetry telemetry, Color b){
+        initOpenCV(hardwareMap);
+        if(b == Color.Red){
+            BlueMax = 10;
+            GreenMax = 255;
+            RedMax = 255;
+            BlueMin = 0;
+            GreenMin = 255;
+        }
+        else{
+             BlueMax = 255;
+             GreenMax = 255;
+             RedMax = 10;
+             BlueMin = 255;
+             GreenMin = 255;
+             RedMin = 0;
+        }
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        FtcDashboard.getInstance().startCameraStream(BackCamera, 30);
+    }
+    class stream extends OpenCvPipeline{
+        Mat output = new Mat();
+        boolean viewportPaused;
+
+        @Override
+        public Mat processFrame(Mat input) {
+            Mat preprocessFrame = preprocessFrame(input.clone());
+
+
+            List<MatOfPoint> contours = new ArrayList<>();
+            Mat hierarchy = new Mat();
+            Imgproc.findContours(preprocessFrame, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+
+            for(MatOfPoint contour : contours){
+                if(Imgproc.contourArea(contour) > Area){ // Need to tune
+                    RotatedRect rotatedRect = Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray()));
+
+                    // Get the four corners of the rectangle
+                    rotatedRect.points(rectPoints);
+                    Imgproc.polylines(input, Arrays.asList(new MatOfPoint(rectPoints)), true, new Scalar(0, 255, 0), 2);
+                }
+            }
+            hierarchy.release();
+
+            input.copyTo(output);
+            preprocessFrame.release();
+            return output;
+        }
+        @Override
+        public void onViewportTapped() {
+            viewportPaused = !viewportPaused;
+
+            if(viewportPaused)
+            {
+                BackCamera.pauseViewport();
+            }
+            else
+            {
+                BackCamera.resumeViewport();
+            }
+        }
+    }
+    private Mat preprocessFrame(Mat frame) {
+        Mat thresFrame = new Mat();
+        Imgproc.threshold(frame, thresFrame,38,255,Imgproc.THRESH_BINARY_INV);
+
+        Scalar lower = new Scalar(BlueMin, GreenMin, RedMin);//0,0,227
+        Scalar upper = new Scalar(BlueMax, GreenMax,RedMax); //0,255,255
+
+        Mat Mask = new Mat();
+        Core.inRange(thresFrame, lower, upper, Mask);
+
+        Mat BlurredMask = new Mat();
+        Imgproc.medianBlur(Mask,BlurredMask,BlurKernelSize);
+
+        Mask.release();
+        frame.release();
+        thresFrame.release();
+
+        //BlurredMask.release();
+        return BlurredMask;
+    }
+
+    public void CloseCamera(){
+        BackCamera.closeCameraDevice();
+    }
+
+    private void initOpenCV(HardwareMap hardwareMap) {
+        // Create an instance of the camera
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        // Use OpenCvCameraFactory class from FTC SDK to create camera instance
+        BackCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        OpenCamera();
+        BackCamera.setPipeline(new stream());
+
+    }
+    public void OpenCamera(){
+        BackCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                BackCamera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
+    }
+}
