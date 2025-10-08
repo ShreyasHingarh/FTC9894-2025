@@ -15,6 +15,12 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
+//Port to roadrunner with 2 wheel odometry
+// Auto sorting
+// Auto lineup to goal + speed c/ launch + parking
+// Turn on intake
+
+
 public class Camera {
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
@@ -77,7 +83,6 @@ public class Camera {
     }
 
     public double[] telemetryAprilTag(Telemetry telemetry) {
-
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
 
