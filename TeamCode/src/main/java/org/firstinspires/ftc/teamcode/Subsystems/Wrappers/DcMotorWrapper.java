@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class DcMotorWrapper {
     private boolean Reset = false;
-    private DcMotorEx motor;
+    public DcMotorEx motor;
     private ElapsedTime timer;
     private final double Kp;
     private final double Ki;
@@ -34,14 +34,13 @@ public class DcMotorWrapper {
         motor.setPower(0);
     }
     public boolean moveMotorWithDeg(double velocity,int deg) {
-        if(!Reset)
-        {
+        if(!Reset) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             Reset = true;
         }
         moveWithPower(velocity);
-        if(Math.abs(motor.getCurrentPosition()) > deg)
-        {
+        if(Math.abs(motor.getCurrentPosition()) > deg) {
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             moveWithPower(0);
@@ -85,6 +84,11 @@ public class DcMotorWrapper {
     }
     public void SetMode(DcMotor.RunMode mode) {
         motor.setMode(mode);
+    }
+    public void runToPosition(int position, double power) {
+        motor.setTargetPosition(position);
+        motor.setPower(power);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     public void setDirection(DcMotorSimple.Direction d) {
         motor.setDirection(d);
