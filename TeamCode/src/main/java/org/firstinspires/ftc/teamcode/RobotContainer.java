@@ -33,28 +33,18 @@ public class RobotContainer {
     public void ControlCannon(Gamepad gamepad, TelemetryPacket packet){
         hardware.cannon.controllingCannon(gamepad, packet);
         if(hardware.cannon.cannonFiring){
-            resetFromCannonFiring = false;
             if(gamepad.x){
-                if(!isPressed && resetFromLaunching){
+                if(!isPressed){
                     isPressed = true;
                 }
-//                else {
-//                    isPressed = false;
-//                    resetFromLaunching = false;
-//                }
             }
+
             if(isPressed) {
                 isPressed = !hardware.sorter.launch(hardware.camera.Order).run(packet);
+            } else{
+                hardware.sorter.sortMotor.runToPosition(hardware.sorter.sortMotor.getPosition(),hardware.sorter.sortPosition,0.1);
             }
         }
-//        else if(!resetFromCannonFiring){
-//            resetFromCannonFiring = true;//resetFromCannonFiring = hardware.sorter.reset().run(packet);
-//        }
-//
-//        if(!resetFromLaunching){
-//            resetFromLaunching = true;
-//            //resetFromLaunching = hardware.sorter.reset().run(packet);
-//        }
     }
     public void ControlReset(Gamepad gamepad, TelemetryPacket packet){
         if(gamepad.dpad_up && !hasReset){
@@ -62,52 +52,23 @@ public class RobotContainer {
         }
         if(hasReset){
             hasReset = false;
-            //hasReset = !hardware.sorter.reset().run(packet);
+            hasReset = !hardware.sorter.reset().run(packet);
+        }
+        if(gamepad.dpad_down){
+            hardware.sorter.servo.setPosition(0.48);
         }
     }
     public void ControlSort(Gamepad gamepad, TelemetryPacket packet){
-        if(hasReset || hardware.cannon.cannonFiring || !resetFromCannonFiring || !resetFromLaunching) {
-            hardware.intake.Stop().run(packet);
-            return;
-        }
         hardware.intake.control(gamepad,packet, hardware.sorter.isFull);
         if(!hardware.sorter.isFull && hardware.intake.intakeRunning) {
             hardware.sorter.organizeSorter(packet);
         }
     }
-//    public void ControlCannon(Gamepad gamepad, TelemetryPacket packet) {
-//        hardware.cannon.controllingCannon(gamepad, packet);
-//        //when firing
-//        if (hardware.cannon.cannonFiring) {
-//            //manages check for shifting to launch position
-//            if (offsetState == OffsetState.Stop && !a) {
-//                offsetState = OffsetState.MoveToOffset;
-//            }
-//            //check if need to launch
-//            if(colorToShoot == BallColor.None){
-//                if(gamepad.x){
-//                    colorToShoot = BallColor.Green;
-//                } else if (gamepad.y) {
-//                    colorToShoot = BallColor.Purple;
-//                }
-//            }
-//            else{
-//                colorToShoot = hardware.sorter.launchAtColor(colorToShoot).run(packet) ? BallColor.None : colorToShoot;
-//            }
-//        } else if (offsetState == OffsetState.Stop && a) {//If no longer launching anymore reset
-//            offsetState = OffsetState.ResetOffset;
-//        }
-//
-//        //manages states for Offset
-//        switch(offsetState){
-//            case MoveToOffset:
-//                offsetState = hardware.sorter.moveOffSet().run(packet) ? OffsetState.Stop : offsetState;
-//                a = true;
-//                break;
-//            case ResetOffset:
-//                offsetState = hardware.sorter.resetOffset().run(packet) ? OffsetState.Stop : offsetState;
-//                a = false;
-//                break;
-//        }
-//    }
+    public void resetEverything(){
+        hardware.sorter.sortMotor.moveWithPower(0);
+        hardware.cannon.cannon.moveWithPower(0);
+        hardware.intake.Intake.moveWithPower(0);
+        hardware.drive.MoveChassisWithPower(0,0,0,0);
+
+    }
 }

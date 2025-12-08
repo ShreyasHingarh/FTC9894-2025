@@ -14,10 +14,14 @@ public class Teleop extends LinearOpMode {
     private void showTelemetry(){
         telemetry.addData("degrees", robotContainer.hardware.sorter.sortMotor.getPosition());
         telemetry.addData("cannonFiring?", robotContainer.hardware.cannon.cannonFiring);
+        telemetry.addData("order 1", robotContainer.hardware.camera.Order[0]);
+        telemetry.addData("order 2", robotContainer.hardware.camera.Order[1]);
+        telemetry.addData("order 3", robotContainer.hardware.camera.Order[2]);
         telemetry.addData("isPressed", robotContainer.isPressed);
         telemetry.addData("LaunchState", robotContainer.hardware.sorter.launchState);
         telemetry.addData("AutoLaunchState", robotContainer.hardware.sorter.autoLaunch);
         telemetry.addData("indexToSpinTo", robotContainer.hardware.sorter.indexToSpinTo);
+        telemetry.addData("currentPos", robotContainer.hardware.sorter.currentDegrees);
         telemetry.addData("orderToSpin 1", robotContainer.hardware.sorter.orderToLaunch[0]);
         telemetry.addData("orderToSpin 2", robotContainer.hardware.sorter.orderToLaunch[1]);
         telemetry.addData("orderToSpin 3", robotContainer.hardware.sorter.orderToLaunch[2]);
@@ -45,14 +49,13 @@ public class Teleop extends LinearOpMode {
 //        robotContainer.hardware.sorter.reset().run(pack);
         waitForStart();
         while(!robotContainer.hardware.camera.PickOrder(gamepad2)){
-            showTelemetry();
-            telemetry.update();
+
         }
         while(gamepad2.x || gamepad2.b || gamepad2.a){
-            showTelemetry();
-            telemetry.update();
+
         }
         while(opModeIsActive()) {
+
             robotContainer.ControlSort(gamepad2,pack);
             robotContainer.ControlCannon(gamepad2,pack);
             robotContainer.ControlReset(gamepad2,pack);
@@ -61,5 +64,6 @@ public class Teleop extends LinearOpMode {
             showTelemetry();
             telemetry.update();
         }
+        robotContainer.resetEverything();
     }
 }

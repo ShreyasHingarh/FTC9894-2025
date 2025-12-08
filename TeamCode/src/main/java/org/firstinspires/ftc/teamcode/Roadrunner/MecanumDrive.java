@@ -52,6 +52,14 @@ import java.util.List;
 public final class MecanumDrive {
     public static final double SPEED_REDUCTION = 1.0;
     public static boolean hasReset = false;
+    private boolean isInitialized = false;
+    private double targetHeading;
+
+    // Tuning parameters (Adjust these based on your robot's weight/friction)
+    // K_P: How aggressively to turn. If it oscillates, lower this.
+    private static final double K_P = 1.5;
+    // MIN_SPEED: Minimum power to ensure the robot actually moves at the end
+    private static final double MIN_SPEED = 0.15;
 
     public static class Params {
         // IMU orientation
@@ -576,38 +584,74 @@ public final class MecanumDrive {
         };
     }
 
-    /// positive is turning right, negative is turning left
-    public Action Turn(int degrees, double speed, Telemetry telemetry){
+    /// positive degrees is turning right, negative is turning left
+    /// positive degrees is turning LEFT (Counter-Clockwise) by standard math.
+    /// If you want positive to turn RIGHT, change: Math.toRadians(-degrees)
+    public Action Turn(int degrees, double maxSpeed, Telemetry telemetry) {
         return new Action() {
-            private final double targetHeading = Math.toRadians(degrees);
-            private boolean isInitialized = false;
+            // FIX 1: Move these variables HERE so they are unique to *this* specific turn
+            private boolean initialized = false;
+            private double actionTargetHeading = 0;
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                if(!isInitialized){
-                    localizer.setPose(new Pose2d(localizer.getPose().position, 0.0));
-                    isInitialized = true;
+                // Initialize the target once per Action
+                if (!initialized) {
+                    localizer.update(); // Get fresh start pose
+                    double currentHeading = localizer.getPose().heading.toDouble();
+
+                    // Standard Coordinate System: Positive = Left (CCW).
+                    actionTargetHeading = currentHeading + Math.toRadians(degrees);
+                    initialized = true;
                 }
 
-                updatePoseEstimate();
+                localizer.update(); // Update position
                 double currentHeading = localizer.getPose().heading.toDouble();
-                double error = norm(targetHeading - currentHeading);
 
+                // 1. Calculate Error
+                double error = actionTargetHeading - currentHeading;
+
+                // 2. Angle Wrapping
+                while (error > Math.PI) error -= 2 * Math.PI;
+                while (error <= -Math.PI) error += 2 * Math.PI;
+
+                // 3. Check for completion
+                // FIX 2: Do not re-convert tolerance to radians (it is already radians in Params)
                 if (Math.abs(error) < PARAMS.HEADING_TOLERANCE) {
                     MoveChassisWithPower(0, 0, 0, 0);
-                    isInitialized = false;
-                    return true;
+                    return false; // FIX 3: Return FALSE when finished
                 }
-                double turnPower = Math.copySign(speed, error);
 
-                MoveChassisWithPower(turnPower, -turnPower, turnPower, -turnPower);
-                telemetry.addData("Target Heading (rad)", targetHeading);
-                telemetry.addData("Current Heading (rad)", currentHeading);
-                telemetry.addData("Heading Error (rad)", error);
-                telemetry.addData("Turn Power", turnPower);
+                // 4. Calculate Proportional Power (P-Controller)
+                double desiredPower = error * K_P;
+
+                // 5. Clip power
+                double turnPower = Math.copySign(
+                        Math.min(Math.abs(desiredPower), Math.abs(maxSpeed)),
+                        desiredPower
+                );
+
+                // Min speed boost
+                if (Math.abs(turnPower) < MIN_SPEED) {
+                    turnPower = Math.copySign(MIN_SPEED, turnPower);
+                }
+
+                // Apply Power (Standard Mecanum: Left -, Right + for Left Turn)
+                MoveChassisWithPower(-turnPower, turnPower, -turnPower, turnPower);
+
+                // Driver Station Telemetry
+                telemetry.addData("Target (rad)", actionTargetHeading);
+                telemetry.addData("Current (rad)", currentHeading);
+                telemetry.addData("Error (deg)", Math.toDegrees(error));
                 telemetry.update();
 
-                return false;
+                // FTC Dashboard Telemetry (Graphing)
+                telemetryPacket.put("Turn Error", Math.toDegrees(error));
+                telemetryPacket.put("Turn Power", turnPower);
+                telemetryPacket.put("Heading", Math.toDegrees(currentHeading));
+                telemetryPacket.put("Target", Math.toDegrees(actionTargetHeading));
+
+                return true; // FIX 3: Return TRUE while still running
             }
         };
     }

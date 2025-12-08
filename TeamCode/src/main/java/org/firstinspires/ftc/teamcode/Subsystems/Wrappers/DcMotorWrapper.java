@@ -85,10 +85,11 @@ public class DcMotorWrapper {
     public void SetMode(DcMotor.RunMode mode) {
         motor.setMode(mode);
     }
-    public void runToPosition(int position, double power) {
+    public boolean runToPosition(int currentPosition, int position, double power) {
         motor.setTargetPosition(position);
         motor.setPower(power);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        return currentPosition == position;
     }
     public void setDirection(DcMotorSimple.Direction d) {
         motor.setDirection(d);

@@ -21,41 +21,37 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import com.acmerobotics.roadrunner.Action;
 
-//Port to roadrunner with 2 wheel odometry
-// Auto sorting
-// Auto lineup to goal + speed c/ launch + parking
-// Turn on intake
-
-//20 blue goal
-//21: Green Purple Purple
-//22: Purple Green Purple
-//23: Purple Purple Green
-//24 red goal
-
 public class Camera {
     private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
     public BallColor[] Order;
+
     public Camera(HardwareMap hardwareMap) {
         initAprilTag(hardwareMap);
     }
-    private void initAprilTag(HardwareMap hardwareMap) {
-        aprilTag = new AprilTagProcessor.Builder()
 
-                // The following default settings are available to un-comment and edit as needed.
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
-                //.setDrawTagOutline(true)
+    private void initAprilTag(HardwareMap hardwareMap) {
+        // NOTE: CenterStage Library only contains IDs 1-10.
+        // If you are using IDs 21-24, they will show as "Unknown" unless you build a custom library.
+        aprilTag = new AprilTagProcessor.Builder()
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
                 .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-
-                // == CAMERA CALIBRATION ==
-                // If you do not manually specify calibration parameters, the SDK will attempt
-                // to load a predefined calibration for your camera.
-                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
-                // ... these parameters are fx, fy, cx, cy.
-
                 .build();
+
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        builder.setCameraResolution(new Size(640, 480));
+
+        builder.enableLiveView(true);
+
+        builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
+
+        builder.setAutoStopLiveView(false);
+        builder.addProcessor(aprilTag);
+
+        visionPortal = builder.build();
     }
 
     public double[] telemetryAprilTag(Telemetry telemetry) {
@@ -64,24 +60,14 @@ public class Camera {
 
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-                return new double[] {detection.id, detection.ftcPose.x, detection.ftcPose.y};
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-            }
-        }
+            telemetry.addData("Id", detection.id);
+            // Returns the first valid tag found
+            return new double[] {detection.id};
 
-        // Add "key" information to telemetry
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-        telemetry.addLine("RBE = Range, Bearing & Elevation");
-        return new double[]{-1. -1.-1};
+        }
+        return new double[]{-1.0};
     }
+
     public boolean setOrderFromTag(Telemetry telemetry){
         double[] a = telemetryAprilTag(telemetry);
         if(a[0] == 21){
@@ -96,6 +82,7 @@ public class Camera {
         }
         return false;
     }
+
     public boolean PickOrder (Gamepad gamepad){
         if(gamepad.x){
             Order = new BallColor[]{BallColor.Green, BallColor.Purple, BallColor.Purple};
