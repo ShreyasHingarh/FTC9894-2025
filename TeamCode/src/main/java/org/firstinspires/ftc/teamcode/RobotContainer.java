@@ -12,8 +12,6 @@ import org.firstinspires.ftc.teamcode.Enums.Color;
 public class RobotContainer {
 
     public boolean isPressed = false;
-    public boolean resetFromCannonFiring = true;
-    public boolean resetFromLaunching = true;
     public boolean hasReset = false;
     public Hardware hardware;
     public ActionRunner AutoRed;

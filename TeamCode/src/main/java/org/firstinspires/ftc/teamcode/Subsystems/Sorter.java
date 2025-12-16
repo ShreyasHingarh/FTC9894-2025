@@ -22,6 +22,7 @@ public class Sorter {
     public ServoWrapper servo;
     public ColorSensor color1;
     public ColorSensor color2;
+    public ColorSensor color3;
     public LaunchStates launchState;
     public AutoLaunch autoLaunch;
     public BallColor[] holder = new BallColor[]{
@@ -52,8 +53,10 @@ public class Sorter {
         color1.enableLed(true);
         color2 = hardwareMap.get(ColorSensor.class, "color2");
         color2.enableLed(true);
+        color3 = hardwareMap.get(ColorSensor.class, "color3");
+        color3.enableLed(true);
         launchState = LaunchStates.MoveSort;
-        autoLaunch = AutoLaunch.moveOffset;
+        autoLaunch = AutoLaunch.reset;
         timer = new ElapsedTime();
     }
     public int[] getSensorValue(ColorSensor color){
@@ -136,7 +139,7 @@ public class Sorter {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 servo.setPosition(SERVOPOSITION);
                 launchState = LaunchStates.MoveSort;
-                autoLaunch = AutoLaunch.moveOffset;
+                autoLaunch = AutoLaunch.reset;
                 return spinSorterToIntake(0).run(telemetryPacket);
             }
         };
@@ -295,7 +298,7 @@ public class Sorter {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 switch(autoLaunch){
-                    case moveOffset:
+                    case reset:
                         orderToLaunch = GetOrder(order);
                         autoLaunch = AutoLaunch.launch1;
                         break;
@@ -316,7 +319,7 @@ public class Sorter {
                         break;
                     case resetSorter:
                         if(spinSorterToIntake(0).run(telemetryPacket)){
-                            autoLaunch = AutoLaunch.moveOffset;
+                            autoLaunch = AutoLaunch.reset;
                             return true;
                         }
                         break;
