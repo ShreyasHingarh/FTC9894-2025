@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -140,7 +141,14 @@ public class Sorter {
                 servo.setPosition(SERVOPOSITION);
                 launchState = LaunchStates.MoveSort;
                 autoLaunch = AutoLaunch.reset;
-                return spinSorterToIntake(0).run(telemetryPacket);
+                sortMotor.moveWithPower(0.05);
+                int[] a = getSensorValue(color3);
+                if(a[0] < 800 && a[1] < 800 && a[2] < 800){
+                    sortMotor.moveWithPower(0);
+                    sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    return true;
+                }
+                return false;
             }
         };
     }

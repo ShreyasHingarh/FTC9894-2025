@@ -35,6 +35,13 @@ public class Teleop extends LinearOpMode {
         telemetry.addData("color 2 g",b[1]);
         telemetry.addData("color 2 b",b[2]);
         telemetry.addData("color 2 a",b[3]);
+
+        int[] c = robotContainer.hardware.sorter.getSensorValue(robotContainer.hardware.sorter.color3);
+        telemetry.addData("color 3 r",c[0]);
+        telemetry.addData("color 3 g",c[1]);
+        telemetry.addData("color 3 b",c[2]);
+        telemetry.addData("color 3 a",c[3]);
+
         telemetry.addData("Color 1", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color1));
         telemetry.addData("Color 2", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color2));
         telemetry.addData("isFull", robotContainer.hardware.sorter.isFull);
