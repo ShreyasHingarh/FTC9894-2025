@@ -98,14 +98,14 @@ public final class MecanumDrive {
         public double headingVelGain = 0.0; // shared with turn
         // Custom P-Controller Gains for AlignToTag
 
-        public double P_LATERAL = 0.05; // For X error (strafe)
-        public double P_AXIAL = 0.05;   // For Y error (forward/backward)
-        public double P_HEADING = 0.02; // For heading error (turn)
+        public double P_LATERAL = 0.04; // For X error (strafe)
+        public double P_AXIAL = 0.04;   // For Y error (forward/backward)
+        public double P_HEADING = 0.04; // For heading error (turn)
 
         // Tolerance for AlignToTag
-        public double LATERAL_TOLERANCE = 0.5; // in inches
-        public double AXIAL_TOLERANCE = 0.5;   // in inches
-        public double HEADING_TOLERANCE = Math.toRadians(2.0);
+        public double LATERAL_TOLERANCE = 1; // in inches
+        public double AXIAL_TOLERANCE = 1;   // in inches
+        public double HEADING_TOLERANCE = 2;
     }
 
     public static Params PARAMS = new Params();
@@ -715,15 +715,18 @@ public final class MecanumDrive {
                 }
 
                 // Calculate errors relative to the target
-                double errorX = positions[0] - targetX; // Lateral (strafe) error
-                double errorY = positions[1] - targetY; // Axial (forward/backward) error
-                double errorHeading = norm(positions[2] - targetHeading); // Angular (turn) error
-
+                double errorX = positions[1] - targetX; // Lateral (strafe) error
+                double errorY = positions[2] - targetY; // Axial (forward/backward) error
+                double errorHeading = norm(positions[3] - targetHeading); // Angular (turn) error
+                telemetry.addData("errorx", errorX);
+                telemetry.addData("errory", errorY);
+                telemetry.addData("errorHeading", errorHeading);
                 // --- P-Controller Calculations ---
+                double maxPower = 0.35;
                 // Power = -Error * Gain (The negative sign ensures the robot drives *towards* the target)
-                double lateralPower = com.acmerobotics.roadrunner.Math.clamp(-errorX * PARAMS.P_LATERAL, -1.0, 1.0);
-                double axialPower = com.acmerobotics.roadrunner.Math.clamp(-errorY * PARAMS.P_AXIAL, -1.0, 1.0);
-                double turnPower = com.acmerobotics.roadrunner.Math.clamp(-errorHeading * PARAMS.P_HEADING, -1.0, 1.0);
+                double lateralPower = com.acmerobotics.roadrunner.Math.clamp(-errorX * PARAMS.P_LATERAL, -maxPower, maxPower);
+                double axialPower = com.acmerobotics.roadrunner.Math.clamp(-errorY * PARAMS.P_AXIAL, -maxPower, maxPower);
+                double turnPower = com.acmerobotics.roadrunner.Math.clamp(-errorHeading * PARAMS.P_HEADING, -maxPower, maxPower);
 
                 // --- Movement Check ---
                 boolean isXAligned = Math.abs(errorX) < PARAMS.LATERAL_TOLERANCE;
@@ -735,7 +738,7 @@ public final class MecanumDrive {
                     MoveChassisWithPower(0, 0, 0, 0);
                     return true; // Action is complete
                 }
-                driveWithInput(lateralPower, axialPower, turnPower, telemetry);
+                driveWithInput(lateralPower, axialPower, -turnPower, telemetry);
 
                 // --- Telemetry for Debugging ---
                 telemetry.addData("Target Alignment", "X:%.2f, Y:%.2f, H:%.2f", targetX, targetY, Math.toDegrees(targetHeading));
