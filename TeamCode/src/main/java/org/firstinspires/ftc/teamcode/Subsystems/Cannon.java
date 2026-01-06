@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.DcMotorWrapper;
 public class Cannon {
 
     public DcMotorWrapper cannon;
-    public static double CANNON_VELOCITY = -1;
+    public static double CANNON_VELOCITY = -0.9;
     public boolean cannonFiring;
     public boolean isPressed;
     public Cannon(HardwareMap hardwareMap) {

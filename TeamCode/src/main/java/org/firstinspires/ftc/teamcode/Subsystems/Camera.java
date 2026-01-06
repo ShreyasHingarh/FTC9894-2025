@@ -80,19 +80,25 @@ public class Camera {
         return new double[]{-1.0};
     }
 
-    public boolean setOrderFromTag(Telemetry telemetry){
-        double[] a = telemetryAprilTag(telemetry);
-        if(a[0] == 21){
-            Order = new BallColor[]{BallColor.Green, BallColor.Purple, BallColor.Purple};
-            return true;
-        } else if(a[0] == 22){
-            Order = new BallColor[]{BallColor.Purple, BallColor.Green, BallColor.Purple};
-            return true;
-        } else if(a[0] == 23){
-            Order = new BallColor[]{BallColor.Purple, BallColor.Purple, BallColor.Green};
-            return true;
-        }
-        return false;
+    public Action setOrderFromTag(Telemetry telemetry){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double[] a = telemetryAprilTag(telemetry);
+                if(a[0] == 21){
+                    Order = new BallColor[]{BallColor.Green, BallColor.Purple, BallColor.Purple};
+                    return true;
+                } else if(a[0] == 22){
+                    Order = new BallColor[]{BallColor.Purple, BallColor.Green, BallColor.Purple};
+                    return true;
+                } else if(a[0] == 23){
+                    Order = new BallColor[]{BallColor.Purple, BallColor.Purple, BallColor.Green};
+                    return true;
+                }
+                return false;
+            }
+        };
+
     }
 
     public boolean PickOrder (Gamepad gamepad){

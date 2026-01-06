@@ -536,6 +536,16 @@ public final class MecanumDrive {
         telemetry.addData("Powers", "FL:%.2f BL:%.2f BR:%.2f FR:%.2f", flPower, blPower, brPower, frPower);
         telemetry.addData("Inputs", "X:%.2f Y:%.2f Turn:%.2f", x, y, turnInput);
     }
+    public Action reset(Telemetry telemetry){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                driveWithInput(0,0,0,telemetry);
+                resetEncoders();
+                return false;
+            }
+        };
+    }
     public void resetEncoders() {
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -562,7 +572,6 @@ public final class MecanumDrive {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 double ticks = InchesToTicks(Inches);
                 telemetry.addData("Ticks",ticks);
-                telemetry.update();
                 if(!hasReset){
                     MoveChassisWithPower(0,0,0,0);
                     resetEncoders();
@@ -572,6 +581,8 @@ public final class MecanumDrive {
                 MoveChassisWithPower(speed,speed,speed,speed);
                 double avg = (double) (Math.abs(leftFront.getCurrentPosition()) + Math.abs(rightFront.getCurrentPosition())
                         + Math.abs(leftBack.getCurrentPosition()) + Math.abs(rightBack.getCurrentPosition())) / 4;
+                telemetry.addData("avg", avg);
+                telemetry.update();
                 if(avg > ticks){
                     MoveChassisWithPower(0,0,0,0);
                     resetEncoders();
@@ -583,6 +594,8 @@ public final class MecanumDrive {
             }
         };
     }
+    private boolean initialized = false;
+    private double actionTargetHeading = 0;
 
     /// positive degrees is turning right, negative is turning left
     /// positive degrees is turning LEFT (Counter-Clockwise) by standard math.
@@ -590,9 +603,6 @@ public final class MecanumDrive {
     public Action Turn(int degrees, double maxSpeed, Telemetry telemetry) {
         return new Action() {
             // FIX 1: Move these variables HERE so they are unique to *this* specific turn
-            private boolean initialized = false;
-            private double actionTargetHeading = 0;
-
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 // Initialize the target once per Action
@@ -607,19 +617,19 @@ public final class MecanumDrive {
 
                 localizer.update(); // Update position
                 double currentHeading = localizer.getPose().heading.toDouble();
-
+                telemetry.addData("pos", localizer.getPose().heading.toDouble());
                 // 1. Calculate Error
                 double error = actionTargetHeading - currentHeading;
 
                 // 2. Angle Wrapping
                 while (error > Math.PI) error -= 2 * Math.PI;
                 while (error <= -Math.PI) error += 2 * Math.PI;
+                telemetry.addData("err", error);
 
                 // 3. Check for completion
-                // FIX 2: Do not re-convert tolerance to radians (it is already radians in Params)
-                if (Math.abs(error) < PARAMS.HEADING_TOLERANCE) {
+                if (Math.abs(error) < Math.PI/12) {
                     MoveChassisWithPower(0, 0, 0, 0);
-                    return false; // FIX 3: Return FALSE when finished
+                    return true;
                 }
 
                 // 4. Calculate Proportional Power (P-Controller)
@@ -651,7 +661,7 @@ public final class MecanumDrive {
                 telemetryPacket.put("Heading", Math.toDegrees(currentHeading));
                 telemetryPacket.put("Target", Math.toDegrees(actionTargetHeading));
 
-                return true; // FIX 3: Return TRUE while still running
+                return false;
             }
         };
     }

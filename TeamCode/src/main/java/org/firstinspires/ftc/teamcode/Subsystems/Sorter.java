@@ -31,8 +31,8 @@ public class Sorter {
         BallColor.None,
         BallColor.None
     };
-    private final double SERVOLAUNCH = 0.15;
-    private final double SERVOPOSITION = 0.48;
+    private final double SERVOLAUNCH = 0;
+    private final double SERVOPOSITION = 0.15;
     private final double SERVOTIME = 600;
     private final double SortSpeed = 0.2;
 
@@ -141,7 +141,6 @@ public class Sorter {
                 servo.setPosition(SERVOPOSITION);
                 launchState = LaunchStates.MoveSort;
                 autoLaunch = AutoLaunch.reset;
-                sortMotor.moveWithPower(0.05);
                 int[] a = getSensorValue(color3);
                 if(a[0] < 800 && a[1] < 800 && a[2] < 800){
                     sortMotor.moveWithPower(0);

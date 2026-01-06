@@ -46,6 +46,7 @@ public class Teleop extends LinearOpMode {
         telemetry.addData("Color 2", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color2));
         telemetry.addData("isFull", robotContainer.hardware.sorter.isFull);
         telemetry.addData("currentPosition", robotContainer.hardware.sorter.currentPosition);
+        telemetry.addData("sorterPower", robotContainer.hardware.sorter.sortMotor.getPower());
         telemetry.addData("hold 0", robotContainer.hardware.sorter.holder[0]);
         telemetry.addData("hold 1", robotContainer.hardware.sorter.holder[1]);
         telemetry.addData("hold 2", robotContainer.hardware.sorter.holder[2]);
@@ -65,7 +66,7 @@ public class Teleop extends LinearOpMode {
             robotContainer.ControlSort(gamepad2,pack);
             robotContainer.ControlCannon(gamepad2,pack);
             robotContainer.ControlReset(gamepad2,pack);
-            robotContainer.hardware.drive.driveWithInput(gamepad2.left_stick_x, -gamepad2.left_stick_y, gamepad2.right_stick_x, telemetry);
+            robotContainer.hardware.drive.driveWithInput(gamepad2.left_stick_x, -gamepad2.left_stick_y, 0.7 * gamepad2.right_stick_x, telemetry);
             showTelemetry();
             telemetry.update();
         }

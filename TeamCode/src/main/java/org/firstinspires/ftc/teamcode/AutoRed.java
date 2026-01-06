@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Enums.Color;
 @Autonomous
 public class AutoRed extends LinearOpMode {
 
-    RobotContainer mainActions;
+    RobotContainer robotContainer;
     //move out
     //see pattern to shoot
     //shoot the 3
@@ -23,48 +23,52 @@ public class AutoRed extends LinearOpMode {
     //intake next 3
     //shoot the next 3 aligning to apriltag
     //move out
+    private void showTelemetry(){
+        telemetry.addData("isPressed", robotContainer.isPressed);
+        telemetry.addData("LaunchState", robotContainer.hardware.sorter.launchState);
+        telemetry.addData("AutoLaunchState", robotContainer.hardware.sorter.autoLaunch);
+        telemetry.addData("indexToSpinTo", robotContainer.hardware.sorter.indexToSpinTo);
+        telemetry.addData("currentPos", robotContainer.hardware.sorter.currentDegrees);
+        telemetry.addData("orderToSpin 1", robotContainer.hardware.sorter.orderToLaunch[0]);
+        telemetry.addData("orderToSpin 2", robotContainer.hardware.sorter.orderToLaunch[1]);
+        telemetry.addData("orderToSpin 3", robotContainer.hardware.sorter.orderToLaunch[2]);
+        int[] a = robotContainer.hardware.sorter.getSensorValue(robotContainer.hardware.sorter.color1);
+        telemetry.addData("color 1 r",a[0]);
+        telemetry.addData("color 1 g",a[1]);
+        telemetry.addData("color 1 b",a[2]);
+        telemetry.addData("color 1 a",a[3]);
+        int[] b = robotContainer.hardware.sorter.getSensorValue(robotContainer.hardware.sorter.color2);
+        telemetry.addData("color 2 r",b[0]);
+        telemetry.addData("color 2 g",b[1]);
+        telemetry.addData("color 2 b",b[2]);
+        telemetry.addData("color 2 a",b[3]);
 
+        int[] c = robotContainer.hardware.sorter.getSensorValue(robotContainer.hardware.sorter.color3);
+        telemetry.addData("color 3 r",c[0]);
+        telemetry.addData("color 3 g",c[1]);
+        telemetry.addData("color 3 b",c[2]);
+        telemetry.addData("color 3 a",c[3]);
+
+        telemetry.addData("Color 1", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color1));
+        telemetry.addData("Color 2", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color2));
+        telemetry.addData("isFull", robotContainer.hardware.sorter.isFull);
+        telemetry.addData("currentPosition", robotContainer.hardware.sorter.currentPosition);
+        telemetry.addData("sorterPower", robotContainer.hardware.sorter.sortMotor.getPower());
+        telemetry.addData("hold 0", robotContainer.hardware.sorter.holder[0]);
+        telemetry.addData("hold 1", robotContainer.hardware.sorter.holder[1]);
+        telemetry.addData("hold 2", robotContainer.hardware.sorter.holder[2]);
+    }
     @Override
     public void runOpMode() throws InterruptedException {
-        mainActions = new RobotContainer(hardwareMap,telemetry, Color.Blue);
-        mainActions.hardware.sorter.holder[0] = BallColor.Green;
-        mainActions.hardware.sorter.holder[1] = BallColor.Purple;
-        mainActions.hardware.sorter.holder[2] = BallColor.Purple;
-        mainActions.hardware.sorter.isFull = true;
-        ElapsedTime time = new ElapsedTime();
+        robotContainer = new RobotContainer(hardwareMap,telemetry, Color.Blue);
+        robotContainer.hardware.sorter.holder[0] = BallColor.Green;
+        robotContainer.hardware.sorter.holder[1] = BallColor.Purple;
+        robotContainer.hardware.sorter.holder[2] = BallColor.Purple;
+        robotContainer.hardware.sorter.isFull = true;
         waitForStart();
-        mainActions.hardware.sorter.sortMotor.motor.setTargetPosition(0);
-        mainActions.hardware.sorter.sortMotor.motor.setPower(0.2);
-        mainActions.hardware.sorter.sortMotor.motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while(mainActions.hardware.sorter.sortMotor.getPosition() != 0){
-            mainActions.hardware.camera.telemetryAprilTag(telemetry);
+        while(opModeIsActive() && !robotContainer.AutoRed.Run(new TelemetryPacket())){
+            telemetry.addData("i",robotContainer.AutoRed.index);
         }
-        while(!mainActions.hardware.drive.Move(44, -0.5, telemetry).run(new TelemetryPacket())) {
-            mainActions.hardware.camera.telemetryAprilTag(telemetry);
-        }
-        Actions.runBlocking(
-                mainActions.hardware.drive.Turn(60, 0.15, telemetry)
-        );
-        while(!mainActions.hardware.camera.setOrderFromTag(telemetry)){
-            telemetry.addData("a",mainActions.hardware.camera.telemetryAprilTag(telemetry)[0]);
-            telemetry.update();
-        }
-        Actions.runBlocking(
-                mainActions.hardware.drive.Turn(-60, 0.15, telemetry)
-        );
-        mainActions.hardware.cannon.cannon.moveWithPower(-0.8);
-        while(!mainActions.hardware.sorter.launch(mainActions.hardware.camera.Order).run(new TelemetryPacket())){
-
-        }
-        time.reset();
-        mainActions.hardware.drive.driveWithInput(0.5,0,0,telemetry);
-        while(time.milliseconds() < 1000){
-
-        }
-        mainActions.hardware.drive.driveWithInput(0,0,0,telemetry);
-        while(!mainActions.hardware.sorter.spinSorterToIntake(0).run(new TelemetryPacket())){
-
-        }
-        mainActions.resetEverything();
+        robotContainer.resetEverything();
     }
 }

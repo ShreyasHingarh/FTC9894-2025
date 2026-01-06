@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -16,15 +17,39 @@ public class RobotContainer {
     public Hardware hardware;
     public ActionRunner AutoRed;
     public ActionRunner AutoBlue;
-    //private ElapsedTime timer = new ElapsedTime();
-    //public Action time = telemetryPacket1 -> timer.milliseconds() > 1000;
+    private ElapsedTime timer = new ElapsedTime();
+    public Action time = telemetryPacket1 -> timer.milliseconds() > 1000;
 
     public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry, Color a){
         hardware = new Hardware(hardwareMap, telemetry);
         AutoRed = new ActionRunner(telemetry
-                , hardware.drive.Move(40,0.4,telemetry));
+                //, hardware.sorter.reset()
+                , hardware.drive.Move(35, -0.5, telemetry)
+                , hardware.drive.Turn(55, 0.25, telemetry)
+                , hardware.camera.setOrderFromTag(telemetry)
+                , hardware.drive.Turn(-55, 0.25, telemetry)
+//                , hardware.cannon.cannonFire()
+//                , hardware.sorter.launch(hardware.camera.Order)
+//                , hardware.cannon.cannonStop()
+//                , hardware.drive.Strafe(15,0.5,telemetry)
+//                , hardware.sorter.spinSorterToIntake(0)
+//                , hardware.drive.reset(telemetry)
+//                , hardware.sorter.reset()
+        );
+
         AutoBlue = new ActionRunner(telemetry
-                , hardware.drive.Move(40,0.4,telemetry));
+                , hardware.sorter.reset()
+                , hardware.drive.Move(44, -0.5, telemetry)
+                , hardware.drive.Turn(60, 0.15, telemetry)
+                , hardware.camera.setOrderFromTag(telemetry)
+                , hardware.drive.Turn(-60, 0.15, telemetry)
+                , hardware.cannon.cannonFire()
+                , hardware.sorter.launch(hardware.camera.Order)
+                , hardware.cannon.cannonStop()
+                , hardware.drive.Strafe(15,-0.5,telemetry)
+                , hardware.sorter.spinSorterToIntake(0)
+                , hardware.drive.reset(telemetry)
+                , hardware.sorter.reset());
     }
 
 
@@ -46,12 +71,14 @@ public class RobotContainer {
     }
     public void ControlReset(Gamepad gamepad, TelemetryPacket packet){
         if(gamepad.dpad_up && !hasReset){
+            hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            hardware.sorter.sortMotor.moveWithPower(0.1);
             hasReset = true;
         }
-        if(hasReset){
-            hasReset = false;
+        else if(hasReset){
             hasReset = !hardware.sorter.reset().run(packet);
         }
+
         if(gamepad.dpad_down){
             hardware.sorter.servo.setPosition(0.48);
         }
