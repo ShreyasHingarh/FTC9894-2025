@@ -629,6 +629,8 @@ public final class MecanumDrive {
                 // 3. Check for completion
                 if (Math.abs(error) < Math.PI/12) {
                     MoveChassisWithPower(0, 0, 0, 0);
+                    initialized = false;
+                    actionTargetHeading = 0;
                     return true;
                 }
 

@@ -22,7 +22,7 @@ public class BlockArmTest extends LinearOpMode {
             if(gamepad2.x){
                 motor.setPosition(0);
             }else if(gamepad2.y){
-                motor.setPosition(0.15);
+                motor.setPosition(0.18);
             }
         }
     }

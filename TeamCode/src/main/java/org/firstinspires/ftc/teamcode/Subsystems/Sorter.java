@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.Enums.AutoLaunch;
 import org.firstinspires.ftc.teamcode.Enums.BallColor;
 import org.firstinspires.ftc.teamcode.Enums.LaunchStates;
+import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.DcMotorWrapper;
 import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.ServoWrapper;
 
@@ -32,7 +33,7 @@ public class Sorter {
         BallColor.None
     };
     private final double SERVOLAUNCH = 0;
-    private final double SERVOPOSITION = 0.15;
+    private final double SERVOPOSITION = 0.18;
     private final double SERVOTIME = 600;
     private final double SortSpeed = 0.2;
 
@@ -201,7 +202,8 @@ public class Sorter {
         }
     }
 
-    public int[] GetOrder(BallColor[] requiredOrder){
+    public int[] GetOrder(Hardware hardware){
+        BallColor[] requiredOrder = hardware.camera.Order;
         int[] orderToSpin = new int[3];
         int numberOfPurple = 0;
         int numberOfGreen = 0;
@@ -300,13 +302,13 @@ public class Sorter {
             }
         };
     }
-    public Action launch(BallColor[] order){
+    public Action launch(Hardware hardware){
         return new Action (){
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 switch(autoLaunch){
                     case reset:
-                        orderToLaunch = GetOrder(order);
+                        orderToLaunch = GetOrder(hardware);
                         autoLaunch = AutoLaunch.launch1;
                         break;
                     case launch1:

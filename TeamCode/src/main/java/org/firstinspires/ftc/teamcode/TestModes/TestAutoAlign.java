@@ -18,13 +18,14 @@ public class TestAutoAlign extends LinearOpMode{
         double[] target = new double[]{ -25,11,40};
         while(opModeIsActive()){
             double[] data = camera.telemetryAprilTag(telemetry);
+            telemetry.addData("a",data[0]);
             if(gamepad1.a && !x){
                 x = true;
             }
 
-            if(x){
-                x = !drive.AlignToTag(data, target,telemetry).run(new TelemetryPacket());
-            }
+//            if(x){
+//                x = !drive.AlignToTag(data, target,telemetry).run(new TelemetryPacket());
+//            }
             telemetry.update();
         }
     }
