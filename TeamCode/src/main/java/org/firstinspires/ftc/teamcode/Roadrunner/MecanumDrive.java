@@ -540,9 +540,9 @@ public final class MecanumDrive {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                driveWithInput(0,0,0,telemetry);
+                MoveChassisWithPower(0,0,0,0);
                 resetEncoders();
-                return false;
+                return true;
             }
         };
     }

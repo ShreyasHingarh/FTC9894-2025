@@ -22,6 +22,10 @@ public class RobotContainer {
     public ActionRunner AutoBlue;
     private ElapsedTime timer = new ElapsedTime();
     public Action time = telemetryPacket1 -> timer.milliseconds() > 5000;
+    public Action resetTime = telemetryPacket -> {
+        timer.reset();
+        return true;
+    };
 
     public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry, Color a){
         hardware = new Hardware(hardwareMap, telemetry);
@@ -31,12 +35,19 @@ public class RobotContainer {
                 , hardware.drive.Turn(60, 0.25, telemetry)
                 , hardware.camera.setOrderFromTag(telemetry)
                 , hardware.drive.Turn(-60, 0.25, telemetry)
+                //
 //                ,time
+                , hardware.cannon.cannonFire()
+                , hardware.sorter.launch(hardware)
+                , hardware.cannon.cannonStop()
+                , hardware.drive.Move(5,-0.5,telemetry) //here
+                , hardware.drive.Turn(40,0.25,telemetry) //here
+                // intake three
+                // invert driving from the here lines
+                 //,hardware.drive.AlignToTag(hardware, telemetry)
 //                , hardware.cannon.cannonFire()
 //                , hardware.sorter.launch(hardware)
 //                , hardware.cannon.cannonStop()
-                , hardware.drive.Move(5,-0.5,telemetry)
-                , hardware.drive.Turn(40,0.25,telemetry)
 //                , hardware.drive.Strafe(15,0.5,telemetry)
 //                , hardware.sorter.spinSorterToIntake(0)
 //                , hardware.drive.reset(telemetry)
@@ -58,6 +69,22 @@ public class RobotContainer {
                 , hardware.sorter.reset());
     }
 
+    public Action IntakeThree(Telemetry telemetry){
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                hardware.drive.driveWithInput(0,0.1,0, telemetry);
+                hardware.intake.Run().run(telemetryPacket);
+                if(!hardware.sorter.isFull) {
+                    hardware.sorter.organizeSorter(telemetryPacket);
+                    return false;
+                }
+                hardware.drive.reset(telemetry).run(telemetryPacket);
+                hardware.intake.Stop().run(telemetryPacket);
+                return true;
+            }
+        };
+    }
 
     public void ControlCannon(Gamepad gamepad, TelemetryPacket packet){
         hardware.cannon.controllingCannon(gamepad, packet);
@@ -100,6 +127,5 @@ public class RobotContainer {
         hardware.cannon.cannon.moveWithPower(0);
         hardware.intake.Intake.moveWithPower(0);
         hardware.drive.MoveChassisWithPower(0,0,0,0);
-
     }
 }
