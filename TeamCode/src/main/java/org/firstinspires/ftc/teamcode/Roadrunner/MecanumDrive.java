@@ -667,10 +667,11 @@ public final class MecanumDrive {
             }
         };
     }
+    private double ticks;
+    private double strafePower;
     public Action Strafe (int Inches, double speed, Telemetry telemetry){
         return new Action() {
-            private final double ticks = InchesToTicks(Math.abs(Inches));
-            private final double strafePower = Math.copySign(speed, Inches);
+
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 telemetry.addData("Target Ticks", ticks);
@@ -679,6 +680,8 @@ public final class MecanumDrive {
                     MoveChassisWithPower(0,0,0,0);
                     resetEncoders();
                     runWithEncoders();
+                    ticks = InchesToTicks(Math.abs(Inches));
+                    strafePower = Math.copySign(speed, Inches);
                     hasReset = true;
                 }
                 MoveChassisWithPower(strafePower, -strafePower, -strafePower, strafePower);

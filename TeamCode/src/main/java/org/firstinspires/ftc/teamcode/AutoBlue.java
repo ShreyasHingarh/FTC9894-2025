@@ -23,8 +23,8 @@ public class AutoBlue extends LinearOpMode {
         robotContainer.hardware.sorter.holder[2] = BallColor.Purple;
         robotContainer.hardware.sorter.isFull = true;
         waitForStart();
-        while(!robotContainer.AutoBlue.Run(new TelemetryPacket())){
-
+        while(opModeIsActive() && !robotContainer.AutoBlue.Run(new TelemetryPacket())){
+            telemetry.addData("i",robotContainer.AutoRed.index);
         }
         robotContainer.resetEverything();
     }

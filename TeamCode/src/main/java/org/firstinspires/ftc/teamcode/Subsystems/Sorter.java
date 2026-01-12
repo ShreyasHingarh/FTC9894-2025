@@ -32,9 +32,9 @@ public class Sorter {
         BallColor.None,
         BallColor.None
     };
-    private final double SERVOLAUNCH = 0;
-    private final double SERVOPOSITION = 0.18;
-    private final double SERVOTIME = 600;
+    public final double SERVOLAUNCH = 0;
+    public final double SERVOPOSITION = 0.18;
+    private final double SERVOTIME = 500;
     private final double SortSpeed = 0.2;
 
     private final ElapsedTime timer;
@@ -143,8 +143,8 @@ public class Sorter {
                 launchState = LaunchStates.MoveSort;
                 autoLaunch = AutoLaunch.reset;
                 int[] a = getSensorValue(color3);
-                if(a[0] < 800 && a[1] < 800 && a[2] < 800){
-                    sortMotor.moveWithPower(0);
+                if(a[3] < 30){
+                    sortMotor.moveWithPower(0.0001);
                     sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     return true;
                 }
@@ -276,7 +276,7 @@ public class Sorter {
                         }
                         break;
                     case wait:
-                        if(timer.milliseconds() > 400){
+                        if(timer.milliseconds() > 300){
                             launchState = LaunchStates.servoLaunch;
                             timer.reset();
                         }

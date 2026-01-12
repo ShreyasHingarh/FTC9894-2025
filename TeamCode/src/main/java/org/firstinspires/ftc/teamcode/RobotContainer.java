@@ -16,7 +16,6 @@ import org.firstinspires.ftc.teamcode.Enums.Color;
 public class RobotContainer {
 
     public boolean isPressed = false;
-    public boolean hasReset = false;
     public Hardware hardware;
     public ActionRunner AutoRed;
     public ActionRunner AutoBlue;
@@ -30,40 +29,42 @@ public class RobotContainer {
     public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry, Color a){
         hardware = new Hardware(hardwareMap, telemetry);
         AutoRed = new ActionRunner(telemetry
-                , hardware.sorter.reset()
+                //, hardware.sorter.reset()
                 , hardware.drive.Move(35, -0.5, telemetry)
                 , hardware.drive.Turn(60, 0.25, telemetry)
                 , hardware.camera.setOrderFromTag(telemetry)
-                , hardware.drive.Turn(-60, 0.25, telemetry)
+                , hardware.drive.Turn(-45, 0.25, telemetry)
                 //
 //                ,time
                 , hardware.cannon.cannonFire()
                 , hardware.sorter.launch(hardware)
                 , hardware.cannon.cannonStop()
-                , hardware.drive.Move(5,-0.5,telemetry) //here
-                , hardware.drive.Turn(40,0.25,telemetry) //here
+//                , hardware.drive.Move(5,-0.5,telemetry) //here
+//                , hardware.drive.Turn(40,0.25,telemetry) //here
                 // intake three
                 // invert driving from the here lines
                  //,hardware.drive.AlignToTag(hardware, telemetry)
 //                , hardware.cannon.cannonFire()
 //                , hardware.sorter.launch(hardware)
 //                , hardware.cannon.cannonStop()
-//                , hardware.drive.Strafe(15,0.5,telemetry)
-//                , hardware.sorter.spinSorterToIntake(0)
-//                , hardware.drive.reset(telemetry)
-//                , hardware.sorter.reset()
+                , hardware.drive.Strafe(15,-0.5,telemetry)
+                , hardware.sorter.spinSorterToIntake(0)
+                , hardware.drive.reset(telemetry)
+                , hardware.sorter.reset()
         );
 
         AutoBlue = new ActionRunner(telemetry
                 , hardware.sorter.reset()
-                , hardware.drive.Move(44, -0.5, telemetry)
-                , hardware.drive.Turn(60, 0.15, telemetry)
+                , hardware.drive.Move(35, -0.5, telemetry)
+                , hardware.drive.Turn(-60, 0.25, telemetry)
                 , hardware.camera.setOrderFromTag(telemetry)
-                , hardware.drive.Turn(-60, 0.15, telemetry)
+                , hardware.drive.Turn(70, 0.25, telemetry)
+                //
+//                ,time
                 , hardware.cannon.cannonFire()
                 , hardware.sorter.launch(hardware)
                 , hardware.cannon.cannonStop()
-                , hardware.drive.Strafe(15,-0.5,telemetry)
+                , hardware.drive.Strafe(15,0.5,telemetry)
                 , hardware.sorter.spinSorterToIntake(0)
                 , hardware.drive.reset(telemetry)
                 , hardware.sorter.reset());
@@ -97,23 +98,29 @@ public class RobotContainer {
 
             if(isPressed) {
                 isPressed = !hardware.sorter.launch(hardware).run(packet);
-            } else{
-                hardware.sorter.sortMotor.runToPosition(hardware.sorter.sortMotor.getPosition(),hardware.sorter.sortPosition,0.1);
             }
         }
     }
+    boolean x = false;
     public void ControlReset(Gamepad gamepad, TelemetryPacket packet){
-        if(gamepad.dpad_up && !hasReset){
-            hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            hardware.sorter.sortMotor.moveWithPower(0.1);
-            hasReset = true;
-        }
-        else if(hasReset){
-            hasReset = !hardware.sorter.reset().run(packet);
+        if(gamepad.dpad_left || gamepad.dpad_right){
+            if(gamepad.dpad_left) {
+                hardware.sorter.sortMotor.moveWithPower(0.05);
+                x = true;
+            } else if(gamepad.dpad_right) {
+                hardware.sorter.sortMotor.moveWithPower(-0.05);
+                x = true;
+            }
+        } else if((hardware.sorter.isFull || !hardware.intake.intakeRunning) && !isPressed){
+            hardware.sorter.sortMotor.moveWithPower(0.0001);
+            if(x){
+                hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                x = false;
+            }
         }
 
         if(gamepad.dpad_down){
-            hardware.sorter.servo.setPosition(0.48);
+            hardware.sorter.servo.setPosition(hardware.sorter.SERVOPOSITION);
         }
     }
     public void ControlSort(Gamepad gamepad, TelemetryPacket packet){
