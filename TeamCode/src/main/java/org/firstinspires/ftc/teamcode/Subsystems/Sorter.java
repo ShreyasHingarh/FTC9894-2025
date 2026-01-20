@@ -17,11 +17,10 @@ import org.firstinspires.ftc.teamcode.Enums.BallColor;
 import org.firstinspires.ftc.teamcode.Enums.LaunchStates;
 import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.DcMotorWrapper;
-import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.ServoWrapper;
 
 public class Sorter {
     public DcMotorWrapper sortMotor;
-    public ServoWrapper servo;
+    public DcMotorWrapper kicker;
     public ColorSensor color1;
     public ColorSensor color2;
     public ColorSensor color3;
@@ -32,13 +31,12 @@ public class Sorter {
         BallColor.None,
         BallColor.None
     };
-    public final double SERVOLAUNCH = 0;
-    public final double SERVOPOSITION = 0.18;
-    private final double SERVOTIME = 500;
+    public final int KICKERREST = 0;
+    public final int KICKERKICK = 35;
+    public final double KICKERSPEED = 0.9;
     private final double SortSpeed = 0.2;
 
     private final ElapsedTime timer;
-    public int sortPosition = 0;
     public int currentPosition = 0;
     public int currentDegrees = 0;
     public boolean isFull = false;
@@ -49,8 +47,7 @@ public class Sorter {
         sortMotor = new DcMotorWrapper(hardwareMap, "sorter", 0,0,0);
         sortMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         sortMotor.runToPosition(sortMotor.getPosition(),0, 0.1);
-        servo = new ServoWrapper(hardwareMap,"kickerReal");
-        servo.setPosition(SERVOPOSITION);
+        kicker = new DcMotorWrapper(hardwareMap,"kicker",0,0,0);
         color1 = hardwareMap.get(ColorSensor.class, "color1");
         color1.enableLed(true);
         color2 = hardwareMap.get(ColorSensor.class, "color2");
@@ -74,19 +71,16 @@ public class Sorter {
                 if(nextPosition == 0){
                     if(sortMotor.runToPosition(currentDegrees,0, SortSpeed)){
                         currentPosition = nextPosition;
-                        sortPosition = 0;
                         return true;
                     }
                 } else if(nextPosition == 1){
                     if(sortMotor.runToPosition(currentDegrees,180, SortSpeed)){
                         currentPosition = nextPosition;
-                        sortPosition = 180;
                         return true;
                     }
                 } else if(nextPosition == 2){
                     if(sortMotor.runToPosition(currentDegrees,360,  SortSpeed)){
                         currentPosition = nextPosition;
-                        sortPosition = 360;
                         return true;
                     }
                 }
@@ -114,19 +108,16 @@ public class Sorter {
                 if(nextPosition == 0){
                     if(sortMotor.runToPosition(currentDegrees,270, SortSpeed)){
                         currentPosition = nextPosition;
-                        sortPosition = 270;
                         return true;
                     }
                 } else if(nextPosition == 1){
                     if(sortMotor.runToPosition(currentDegrees,450, SortSpeed)){
                         currentPosition = nextPosition;
-                        sortPosition = 450;
                         return true;
                     }
                 } else if(nextPosition == 2){
                     if(sortMotor.runToPosition(currentDegrees,90,SortSpeed)){
                         currentPosition = nextPosition;
-                        sortPosition = 90;
                         return true;
                     }
                 }
@@ -139,7 +130,7 @@ public class Sorter {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                servo.setPosition(SERVOPOSITION);
+                kicker.runToPosition(kicker.getPosition(),0,KICKERSPEED);
                 launchState = LaunchStates.MoveSort;
                 autoLaunch = AutoLaunch.reset;
                 int[] a = getSensorValue(color3);
@@ -187,15 +178,12 @@ public class Sorter {
         }
         BallColor sensor1Value = sensorSeesBall(color1);
         BallColor sensor2Value = sensorSeesBall(color2);
-        if (!isFull && ((sensor1Value == BallColor.Green && sensor2Value == BallColor.Green)
-                || (sensor1Value == BallColor.None && sensor2Value == BallColor.Green)
-                || (sensor1Value == BallColor.Green && sensor2Value == BallColor.None)
-                || (sensor1Value == BallColor.Purple && sensor2Value == BallColor.Purple)
-                || (sensor1Value == BallColor.Purple && sensor2Value == BallColor.None)
-                || (sensor1Value == BallColor.None && sensor2Value == BallColor.Purple))) {
+        if (!isFull && (sensor1Value == BallColor.Green || sensor2Value == BallColor.Green
+                || sensor1Value == BallColor.Purple || sensor2Value == BallColor.Purple)) {
             holder[currentPosition] = sensor1Value != BallColor.None ? sensor1Value : sensor2Value;
             int[] emptySpots = getEmptySpots();
             if (isFull) {
+                indexToSpinTo = -1;
                 return;
             }
             indexToSpinTo = emptySpots[0];
@@ -276,21 +264,17 @@ public class Sorter {
                         }
                         break;
                     case wait:
-                        if(timer.milliseconds() > 300){
-                            launchState = LaunchStates.servoLaunch;
-                            timer.reset();
+                        if(timer.milliseconds() > 10){
+                            launchState = LaunchStates.kickerLaunch;
                         }
                         break;
-                    case servoLaunch:
-                        servo.setPosition(SERVOLAUNCH);
-                        if(timer.milliseconds() > SERVOTIME){
-                            launchState = LaunchStates.servoReset;
-                            timer.reset();
+                    case kickerLaunch:
+                        if(kicker.runToPosition(kicker.getPosition(),KICKERKICK,KICKERSPEED)){
+                            launchState = LaunchStates.kickerReset;
                         }
                         break;
-                    case servoReset:
-                        servo.setPosition(SERVOPOSITION);
-                        if(timer.milliseconds() > SERVOTIME){
+                    case kickerReset:
+                        if(kicker.runToPosition(kicker.getPosition(),KICKERREST,KICKERSPEED)){
                             launchState = LaunchStates.MoveSort;
                             holder[position] = BallColor.None;
                             isFull = false;

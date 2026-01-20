@@ -62,10 +62,10 @@ public class Teleop extends LinearOpMode {
         while(gamepad2.x || gamepad2.b || gamepad2.a){
 
         }
-        while(opModeIsActive()) {
-            robotContainer.ControlSort(gamepad2,pack);
-            robotContainer.ControlCannon(gamepad2,pack);
-            robotContainer.ControlReset(gamepad2,pack);
+        while (opModeIsActive()) {
+            robotContainer.ControlSort(gamepad2, pack);
+            robotContainer.ControlCannon(gamepad2, pack);
+            //robotContainer.ControlReset(gamepad2, pack);
             robotContainer.hardware.drive.driveWithInput(gamepad2.left_stick_x, -gamepad2.left_stick_y, 0.7 * gamepad2.right_stick_x, telemetry);
             showTelemetry();
             telemetry.update();

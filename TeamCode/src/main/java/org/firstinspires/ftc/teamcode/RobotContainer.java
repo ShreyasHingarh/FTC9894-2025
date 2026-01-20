@@ -90,10 +90,8 @@ public class RobotContainer {
     public void ControlCannon(Gamepad gamepad, TelemetryPacket packet){
         hardware.cannon.controllingCannon(gamepad, packet);
         if(hardware.cannon.cannonFiring){
-            if(gamepad.x){
-                if(!isPressed){
-                    isPressed = true;
-                }
+            if(gamepad.x && !isPressed){
+                isPressed = true;
             }
 
             if(isPressed) {
@@ -103,15 +101,19 @@ public class RobotContainer {
     }
     boolean x = false;
     public void ControlReset(Gamepad gamepad, TelemetryPacket packet){
-        if(gamepad.dpad_left || gamepad.dpad_right){
+        if((gamepad.dpad_left || gamepad.dpad_right) && !hardware.intake.intakeRunning && !hardware.cannon.cannonFiring){
             if(gamepad.dpad_left) {
                 hardware.sorter.sortMotor.moveWithPower(0.05);
                 x = true;
             } else if(gamepad.dpad_right) {
                 hardware.sorter.sortMotor.moveWithPower(-0.05);
                 x = true;
+            } else{
+                hardware.sorter.sortMotor.moveWithPower(0.0001);
+                hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                x = false;
             }
-        } else if((hardware.sorter.isFull || !hardware.intake.intakeRunning) && !isPressed){
+        } else if((hardware.sorter.isFull || !hardware.intake.intakeRunning) && !hardware.cannon.cannonFiring){
             hardware.sorter.sortMotor.moveWithPower(0.0001);
             if(x){
                 hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -120,7 +122,7 @@ public class RobotContainer {
         }
 
         if(gamepad.dpad_down){
-            hardware.sorter.servo.setPosition(hardware.sorter.SERVOPOSITION);
+            hardware.sorter.kicker.runToPosition(hardware.sorter.kicker.getPosition(),0,0.5);
         }
     }
     public void ControlSort(Gamepad gamepad, TelemetryPacket packet){

@@ -16,15 +16,19 @@ import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.ServoWrapper;
 public class BlockArmTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        ColorSensor motor;
-        motor = hardwareMap.get(ColorSensor.class,"color3");
+        DcMotorWrapper motor;
+        motor = new DcMotorWrapper(hardwareMap,"kicker",0,0,0);
+        motor.ResetMotor();
+        motor.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         waitForStart();
         while(opModeIsActive()){
-            telemetry.addData("red",motor.red());
-            telemetry.addData("b",motor.blue());
-            telemetry.addData("g",motor.green());
-            telemetry.addData("hue", (int) JavaUtil.colorToHue((Color.rgb(motor.red(), motor.green(),motor.blue()))));
+//            telemetry.addData("red",motor.red());
+//            telemetry.addData("b",motor.blue());
+//            telemetry.addData("g",motor.green());
+//            telemetry.addData("hue", (int) JavaUtil.colorToHue((Color.rgb(motor.red(), motor.green(),motor.blue()))));
+//            telemetry.update();
+            telemetry.addData("pos", motor.getPosition());
             telemetry.update();
         }
     }
