@@ -18,14 +18,12 @@ public class Cannon {
     public DcMotorWrapper cannon;
     public static double CANNON_VELOCITY = -0.9;
     public boolean cannonFiring;
-    public boolean isPressed;
     public Cannon(HardwareMap hardwareMap) {
         cannon = new DcMotorWrapper(hardwareMap, "cannon", 0,0,0);
         cannon.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         cannon.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
         cannon.setDirection(DcMotorSimple.Direction.FORWARD);
         cannonFiring = false;
-        isPressed = false;
     }
 
 
@@ -48,20 +46,6 @@ public class Cannon {
                 return true;
             }
         };
-    }
-
-    public void controllingCannon(Gamepad gamepad2, TelemetryPacket packet) {
-        //cannon logic
-        if (gamepad2.a && !isPressed) {
-            if(!cannonFiring){
-                cannonFire().run(packet);
-            } else {
-                cannonStop().run(packet);
-            }
-            isPressed = true;
-        } else if(!gamepad2.a && isPressed){
-            isPressed = false;
-        }
     }
 }
 

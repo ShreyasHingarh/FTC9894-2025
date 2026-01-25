@@ -12,10 +12,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Enums.Color;
+import org.firstinspires.ftc.teamcode.Enums.Fire;
 
 public class RobotContainer {
 
     public boolean isPressed = false;
+    public Fire fireState = Fire.CannonOn;
     public Hardware hardware;
     public ActionRunner AutoRed;
     public ActionRunner AutoBlue;
@@ -88,14 +90,26 @@ public class RobotContainer {
     }
 
     public void ControlCannon(Gamepad gamepad, TelemetryPacket packet){
-        hardware.cannon.controllingCannon(gamepad, packet);
-        if(hardware.cannon.cannonFiring){
-            if(gamepad.x && !isPressed){
-                isPressed = true;
-            }
+        if(gamepad.a && !isPressed){
+            isPressed = true;
+        }
 
-            if(isPressed) {
-                isPressed = !hardware.sorter.launch(hardware).run(packet);
+        if(isPressed){
+            switch (fireState){
+                case CannonOn:
+                    hardware.cannon.cannonFire().run(packet);
+                    fireState = Fire.Fire;
+                    break;
+                case Fire:
+                    if(hardware.sorter.launch(hardware).run(packet)){
+                        fireState = Fire.CannonOff;
+                    }
+                    break;
+                case CannonOff:
+                    hardware.cannon.cannonStop().run(packet);
+                    isPressed = false;
+                    fireState = Fire.CannonOn;
+                    break;
             }
         }
     }
