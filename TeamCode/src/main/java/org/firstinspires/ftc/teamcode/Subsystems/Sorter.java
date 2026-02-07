@@ -125,7 +125,6 @@ public class Sorter {
             }
         };
     }
-
     public Action reset(){
         return new Action() {
             @Override
@@ -168,7 +167,6 @@ public class Sorter {
         }
         return BallColor.None;
     }
-
     public void organizeSorter(TelemetryPacket pack) {
         if(indexToSpinTo != -1) {
             if(spinSorterToIntake(indexToSpinTo).run(pack)){
@@ -189,7 +187,6 @@ public class Sorter {
             indexToSpinTo = emptySpots[0];
         }
     }
-
     private int[] GetOrder(Hardware hardware){
         BallColor[] requiredOrder = hardware.camera.Order;
         int[] orderToSpin = new int[3];
@@ -321,6 +318,4 @@ public class Sorter {
             }
         };
     }
-
-
 }

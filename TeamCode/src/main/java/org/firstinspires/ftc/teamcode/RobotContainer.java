@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Enums.Fire;
 public class RobotContainer {
 
     public boolean isPressed = false;
+    private boolean x = false;
     public Fire fireState = Fire.CannonOn;
     public Hardware hardware;
     public ActionRunner AutoRed;
@@ -36,7 +37,7 @@ public class RobotContainer {
                 , hardware.drive.Turn(60, 0.25, telemetry)
                 , hardware.camera.setOrderFromTag(telemetry)
                 , hardware.drive.Turn(-45, 0.25, telemetry)
-                , hardware.cannon.cannonFire()
+                , hardware.cannon.cannonFire(-1)
                 , hardware.sorter.launch(hardware)
                 , hardware.cannon.cannonStop()
                 , hardware.drive.Move(5,-0.5,telemetry)
@@ -45,7 +46,7 @@ public class RobotContainer {
                 , hardware.drive.Turn(-40,0.25,telemetry)
                 , hardware.drive.Move(5,0.5,telemetry)
                 , hardware.drive.AlignToTag(hardware, new double[] { -25,11,40}, telemetry)
-                , hardware.cannon.cannonFire()
+                , hardware.cannon.cannonFire(-1)
                 , hardware.sorter.launch(hardware)
                 , hardware.cannon.cannonStop()
                 , hardware.drive.Strafe(15,-0.5,telemetry)
@@ -62,7 +63,7 @@ public class RobotContainer {
                 , hardware.drive.Turn(70, 0.25, telemetry)
                 //
 //                ,time
-                , hardware.cannon.cannonFire()
+                , hardware.cannon.cannonFire(-1)
                 , hardware.sorter.launch(hardware)
                 , hardware.cannon.cannonStop()
                 , hardware.drive.Strafe(15,0.5,telemetry)
@@ -88,18 +89,18 @@ public class RobotContainer {
         };
     }
 
-    public void ControlCannon(Gamepad gamepad, TelemetryPacket packet){
+    public void ControlCannon(Gamepad gamepad, Telemetry telemetry, TelemetryPacket packet){
         if(gamepad.a && !isPressed){
             isPressed = true;
         }
-
         if(isPressed){
             switch (fireState){
                 case CannonOn:
-                    hardware.cannon.cannonFire().run(packet);
+                    hardware.cannon.cannonFire(hardware.camera.getCannonPower(telemetry)).run(packet);
                     fireState = Fire.Fire;
                     break;
                 case Fire:
+                    hardware.cannon.cannonFire(hardware.camera.getCannonPower(telemetry)).run(packet);
                     if(hardware.sorter.launch(hardware).run(packet)){
                         fireState = Fire.CannonOff;
                     }
@@ -112,7 +113,6 @@ public class RobotContainer {
             }
         }
     }
-    boolean x = false;
     public void ControlReset(Gamepad gamepad, TelemetryPacket packet){
         if((gamepad.dpad_left || gamepad.dpad_right) && !hardware.intake.intakeRunning && !hardware.cannon.cannonFiring){
             if(gamepad.dpad_left) {

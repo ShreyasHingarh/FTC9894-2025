@@ -11,11 +11,10 @@ public class Teleop extends LinearOpMode {
     RobotContainer robotContainer;
     TelemetryPacket pack;
 
-    /// Have to implement the OPENCV program for detecting the balls
     /// Integrate it into the rest of the code (fix the isorter order) (add functionality to run either order)
-    /// tune the auto
+    /// dynamic cannon power using april tag
+    /// Align to tag from far away
     /// create the paths for the auto
-    ///
     private void showTelemetry(){
         telemetry.addData("degrees", robotContainer.hardware.sorter.sortMotor.getPosition());
         telemetry.addData("cannonFiring?", robotContainer.hardware.cannon.cannonFiring);
@@ -55,6 +54,8 @@ public class Teleop extends LinearOpMode {
         telemetry.addData("hold 0", robotContainer.hardware.sorter.holder[0]);
         telemetry.addData("hold 1", robotContainer.hardware.sorter.holder[1]);
         telemetry.addData("hold 2", robotContainer.hardware.sorter.holder[2]);
+
+        telemetry.update();
     }
     @Override
     public void runOpMode() throws InterruptedException {
@@ -69,8 +70,9 @@ public class Teleop extends LinearOpMode {
         }
         while (opModeIsActive()) {
             robotContainer.ControlSort(gamepad2, pack);
-            robotContainer.ControlCannon(gamepad2, pack);
+            robotContainer.ControlCannon(gamepad2, telemetry, pack);
             robotContainer.ControlReset(gamepad2, pack);
+
             if(gamepad2.left_bumper){
                 robotContainer.hardware.drive.driveWithInput(reduction * gamepad2.left_stick_x, reduction * -gamepad2.left_stick_y, reduction * gamepad2.right_stick_x, telemetry);
             }
@@ -78,9 +80,7 @@ public class Teleop extends LinearOpMode {
                 robotContainer.hardware.drive.driveWithInput(gamepad2.left_stick_x, -gamepad2.left_stick_y, 0.7 * gamepad2.right_stick_x, telemetry);
             }
             showTelemetry();
-            telemetry.update();
         }
         robotContainer.resetEverything();
-
     }
 }

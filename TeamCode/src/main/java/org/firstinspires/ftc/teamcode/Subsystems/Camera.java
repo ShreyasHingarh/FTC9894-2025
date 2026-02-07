@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
+import android.annotation.SuppressLint;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
@@ -50,6 +51,7 @@ public class Camera {
                 .build();
     }
 
+    @SuppressLint("DefaultLocale")
     public double[] telemetryAprilTag(Telemetry telemetry) {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
@@ -68,7 +70,8 @@ public class Camera {
                             detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
                             detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
                             detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
-                    return new double[] {detection.id, detection.robotPose.getPosition().x,detection.robotPose.getPosition().y,detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)};
+                    return new double[] {detection.id, detection.robotPose.getPosition().x,detection.robotPose.getPosition().y,
+                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES), detection.ftcPose.range, detection.ftcPose.yaw};
                 }
             } else {
                 telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
@@ -83,21 +86,20 @@ public class Camera {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                double[] a = telemetryAprilTag(telemetry);
-                if(a[0] == 21){
+                double[] data = telemetryAprilTag(telemetry);
+                if(data[0] == 21){
                     Order = new BallColor[]{BallColor.Green, BallColor.Purple, BallColor.Purple};
                     return true;
-                } else if(a[0] == 22){
+                } else if(data[0] == 22){
                     Order = new BallColor[]{BallColor.Purple, BallColor.Green, BallColor.Purple};
                     return true;
-                } else if(a[0] == 23){
+                } else if(data[0] == 23){
                     Order = new BallColor[]{BallColor.Purple, BallColor.Purple, BallColor.Green};
                     return true;
                 }
                 return false;
             }
         };
-
     }
 
     public boolean PickOrder (Gamepad gamepad){
@@ -112,5 +114,18 @@ public class Camera {
             return true;
         }
         return false;
+    }
+    public double getCannonPower(Telemetry telemetry){
+        double[] data = telemetryAprilTag(telemetry);
+        if (data[0] == -1.0) return 0; // Don't turn if tag is lost
+
+        double yaw = data[5]; // How many degrees off-center the tag is
+
+        // Simple Proportional Control (P-Loop)
+        // If we are 10 degrees off, turn at 0.1 power
+        double kP = 0.01;
+        double turnPower = yaw * kP;
+
+        return com.qualcomm.robotcore.util.Range.clip(turnPower, -0.3, 0.3);
     }
 }

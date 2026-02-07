@@ -27,11 +27,11 @@ public class Cannon {
     }
 
 
-    public Action cannonFire() {
+    public Action cannonFire(double power) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                cannon.moveWithPower(CANNON_VELOCITY);
+                cannon.moveWithPower(power);
                 cannonFiring = true;
                 return true;
             }
