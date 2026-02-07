@@ -32,23 +32,22 @@ public class Camera {
     private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
             0, -90, 0, 0);
     public Camera(HardwareMap hardwareMap) {
-        initAprilTag(hardwareMap);
+        initVision(hardwareMap);
     }
+    private OpenCVBallDetection ballProcessor;
 
-    private void initAprilTag(HardwareMap hardwareMap) {
-        // NOTE: CenterStage Library only contains IDs 1-10.
-        // If you are using IDs 21-24, they will show as "Unknown" unless you build a custom library.
+    private void initVision(HardwareMap hardwareMap) {
+        ballProcessor = new OpenCVBallDetection();
         aprilTag = new AprilTagProcessor.Builder()
                 .setCameraPose(cameraPosition, cameraOrientation)
                 .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
                 .build();
 
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        builder.addProcessor(aprilTag);
-
-        visionPortal = builder.build();
+        VisionPortal visionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(aprilTag)      // Processor 1
+                .addProcessor(ballProcessor) // Processor 2
+                .build();
     }
 
     public double[] telemetryAprilTag(Telemetry telemetry) {

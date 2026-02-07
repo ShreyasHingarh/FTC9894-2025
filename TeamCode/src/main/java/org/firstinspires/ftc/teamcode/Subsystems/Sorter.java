@@ -33,7 +33,7 @@ public class Sorter {
     };
     public final int KICKERREST = 0;
     public final int KICKERKICK = 35;
-    public final double KICKERSPEED = 0.9;
+    public final double KICKERSPEED = 1;
     private final double SortSpeed = 0.2;
 
     private final ElapsedTime timer;
@@ -98,7 +98,7 @@ public class Sorter {
         }
         return i;
     }
-    public Action spinSorterToLaunch(int nextPosition) {
+    private Action spinSorterToLaunch(int nextPosition) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -190,7 +190,7 @@ public class Sorter {
         }
     }
 
-    public int[] GetOrder(Hardware hardware){
+    private int[] GetOrder(Hardware hardware){
         BallColor[] requiredOrder = hardware.camera.Order;
         int[] orderToSpin = new int[3];
         int numberOfPurple = 0;
@@ -252,7 +252,7 @@ public class Sorter {
         }
         return orderToSpin;
     }
-    public Action launchAtPosition(int position){
+    private Action launchAtPosition(int position){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {

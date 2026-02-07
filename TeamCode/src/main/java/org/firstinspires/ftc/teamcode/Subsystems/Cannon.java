@@ -16,13 +16,13 @@ import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.DcMotorWrapper;
 public class Cannon {
 
     public DcMotorWrapper cannon;
-    public static double CANNON_VELOCITY = -0.9;
+    public static double CANNON_VELOCITY = -1;
     public boolean cannonFiring;
     public Cannon(HardwareMap hardwareMap) {
         cannon = new DcMotorWrapper(hardwareMap, "cannon", 0,0,0);
         cannon.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         cannon.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        cannon.setDirection(DcMotorSimple.Direction.FORWARD);
+        cannon.setDirection(DcMotorSimple.Direction.REVERSE);
         cannonFiring = false;
     }
 

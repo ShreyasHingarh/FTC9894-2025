@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.Roadrunner.messages.*;
 import java.lang.Math;
 import java.util.Arrays;
@@ -714,7 +715,7 @@ public final class MecanumDrive {
         }
         return adjusted;
     }
-    public Action AlignToTag(double[] positions, double[] target, Telemetry telemetry){
+    public Action AlignToTag(Hardware hardware, double[] target, Telemetry telemetry){
         return new Action() {
             private final double targetX = target[0];
             private final double targetY = target[1];
@@ -722,6 +723,7 @@ public final class MecanumDrive {
 
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double[] positions = hardware.camera.telemetryAprilTag(telemetry);
                 // Stop motion if tag data is missing or incomplete
                 if (positions == null || positions.length < 3) {
                     MoveChassisWithPower(0, 0, 0, 0);

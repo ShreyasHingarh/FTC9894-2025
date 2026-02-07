@@ -31,24 +31,23 @@ public class RobotContainer {
     public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry, Color a){
         hardware = new Hardware(hardwareMap, telemetry);
         AutoRed = new ActionRunner(telemetry
-                //, hardware.sorter.reset()
+                , hardware.sorter.reset()
                 , hardware.drive.Move(35, -0.5, telemetry)
                 , hardware.drive.Turn(60, 0.25, telemetry)
                 , hardware.camera.setOrderFromTag(telemetry)
                 , hardware.drive.Turn(-45, 0.25, telemetry)
-                //
-//                ,time
                 , hardware.cannon.cannonFire()
                 , hardware.sorter.launch(hardware)
                 , hardware.cannon.cannonStop()
-//                , hardware.drive.Move(5,-0.5,telemetry) //here
-//                , hardware.drive.Turn(40,0.25,telemetry) //here
-                // intake three
-                // invert driving from the here lines
-                 //,hardware.drive.AlignToTag(hardware, telemetry)
-//                , hardware.cannon.cannonFire()
-//                , hardware.sorter.launch(hardware)
-//                , hardware.cannon.cannonStop()
+                , hardware.drive.Move(5,-0.5,telemetry)
+                , hardware.drive.Turn(40,0.25,telemetry)
+                , IntakeThree(telemetry)
+                , hardware.drive.Turn(-40,0.25,telemetry)
+                , hardware.drive.Move(5,0.5,telemetry)
+                , hardware.drive.AlignToTag(hardware, new double[] { -25,11,40}, telemetry)
+                , hardware.cannon.cannonFire()
+                , hardware.sorter.launch(hardware)
+                , hardware.cannon.cannonStop()
                 , hardware.drive.Strafe(15,-0.5,telemetry)
                 , hardware.sorter.spinSorterToIntake(0)
                 , hardware.drive.reset(telemetry)

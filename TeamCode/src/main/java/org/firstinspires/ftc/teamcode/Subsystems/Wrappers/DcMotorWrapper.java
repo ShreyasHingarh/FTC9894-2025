@@ -89,7 +89,7 @@ public class DcMotorWrapper {
         motor.setTargetPosition(position);
         motor.setPower(power);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        return currentPosition == position;
+        return Math.abs(currentPosition - position) <= 1;
     }
     public void setDirection(DcMotorSimple.Direction d) {
         motor.setDirection(d);
