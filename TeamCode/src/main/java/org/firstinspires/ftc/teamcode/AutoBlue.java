@@ -17,7 +17,7 @@ public class AutoBlue extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        robotContainer = new RobotContainer(hardwareMap,telemetry, Color.Blue);
+        robotContainer = new RobotContainer(hardwareMap,telemetry);
         robotContainer.hardware.sorter.holder[0] = BallColor.Green;
         robotContainer.hardware.sorter.holder[1] = BallColor.Purple;
         robotContainer.hardware.sorter.holder[2] = BallColor.Purple;

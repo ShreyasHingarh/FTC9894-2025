@@ -60,7 +60,7 @@ public class AutoRed extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
-        robotContainer = new RobotContainer(hardwareMap,telemetry, Color.Blue);
+        robotContainer = new RobotContainer(hardwareMap,telemetry);
         robotContainer.hardware.sorter.holder[0] = BallColor.Green;
         robotContainer.hardware.sorter.holder[1] = BallColor.Purple;
         robotContainer.hardware.sorter.holder[2] = BallColor.Purple;

@@ -18,7 +18,15 @@ public class TestAutoAlign extends LinearOpMode{
         double[] target = new double[]{ -25,11,40};
         while(opModeIsActive()){
             double[] data = camera.telemetryAprilTag(telemetry);
-            telemetry.addData("a",data[0]);
+            telemetry.addData("id",data[0]);
+            if(data.length > 1){
+                telemetry.addData("x", data[1]);
+                telemetry.addData("y", data[2]);
+                telemetry.addData("Yaw", data[3]);
+                telemetry.addData("distance", data[4]);
+                telemetry.addData("yaw", data[5]);
+            }
+
             if(gamepad1.a && !x){
                 x = true;
             }

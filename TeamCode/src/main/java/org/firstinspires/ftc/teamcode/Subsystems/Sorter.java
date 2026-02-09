@@ -256,12 +256,6 @@ public class Sorter {
                 switch(launchState){
                     case MoveSort:
                         if(spinSorterToLaunch(position).run(telemetryPacket)){
-                            launchState = LaunchStates.wait;
-                            timer.reset();
-                        }
-                        break;
-                    case wait:
-                        if(timer.milliseconds() > 10){
                             launchState = LaunchStates.kickerLaunch;
                         }
                         break;

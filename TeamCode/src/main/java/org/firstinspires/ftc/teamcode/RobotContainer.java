@@ -11,13 +11,17 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Enums.AutoLaunch;
+import org.firstinspires.ftc.teamcode.Enums.BallColor;
 import org.firstinspires.ftc.teamcode.Enums.Color;
 import org.firstinspires.ftc.teamcode.Enums.Fire;
+import org.firstinspires.ftc.teamcode.Enums.LaunchStates;
 
 public class RobotContainer {
 
     public boolean isPressed = false;
     private boolean x = false;
+    private boolean shootBasedOnOpenCVOrder;
     public Fire fireState = Fire.CannonOn;
     public Hardware hardware;
     public ActionRunner AutoRed;
@@ -29,7 +33,7 @@ public class RobotContainer {
         return true;
     };
 
-    public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry, Color a){
+    public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry){
         hardware = new Hardware(hardwareMap, telemetry);
         AutoRed = new ActionRunner(telemetry
                 , hardware.sorter.reset()
@@ -91,16 +95,28 @@ public class RobotContainer {
 
     public void ControlCannon(Gamepad gamepad, Telemetry telemetry, TelemetryPacket packet){
         if(gamepad.a && !isPressed){
+            fireState = Fire.CannonOn;
             isPressed = true;
         }
+//        else if(false && gamepad.right_bumper && !isPressed){
+//            fireState = Fire.CannonOn;
+//            hardware.camera.visionPortal.setProcessorEnabled(hardware.camera.ballProcessor,false);
+//            hardware.camera.visionPortal.setProcessorEnabled(hardware.camera.aprilTag,true);
+//            shootBasedOnOpenCVOrder = true;
+//            isPressed = true;
+//        }
         if(isPressed){
+            if(gamepad.x && fireState != Fire.Reset) {
+                hardware.cannon.cannonStop().run(packet);
+                hardware.sorter.sortMotor.moveWithPower(0);
+                fireState = Fire.ResetKicker;
+            }
             switch (fireState){
                 case CannonOn:
                     hardware.cannon.cannonFire(hardware.camera.getCannonPower(telemetry)).run(packet);
                     fireState = Fire.Fire;
                     break;
                 case Fire:
-                    hardware.cannon.cannonFire(hardware.camera.getCannonPower(telemetry)).run(packet);
                     if(hardware.sorter.launch(hardware).run(packet)){
                         fireState = Fire.CannonOff;
                     }
@@ -109,6 +125,19 @@ public class RobotContainer {
                     hardware.cannon.cannonStop().run(packet);
                     isPressed = false;
                     fireState = Fire.CannonOn;
+                    break;
+                case ResetKicker:
+                    if(hardware.sorter.kicker.runToPosition(hardware.sorter.kicker.getPosition(),0,1)){
+                        fireState = Fire.ResetSorter;
+                    }
+                    break;
+                case ResetSorter:
+                    if(hardware.sorter.spinSorterToIntake(0).run(packet)){
+                        hardware.sorter.autoLaunch = AutoLaunch.reset;
+                        hardware.sorter.launchState = LaunchStates.MoveSort;
+                        isPressed = false;
+                        fireState = Fire.CannonOn;
+                    }
                     break;
             }
         }
@@ -121,21 +150,17 @@ public class RobotContainer {
             } else if(gamepad.dpad_right) {
                 hardware.sorter.sortMotor.moveWithPower(-0.05);
                 x = true;
-            } else{
+            } else if(!isPressed){
                 hardware.sorter.sortMotor.moveWithPower(0.0001);
                 hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 x = false;
             }
-        } else if((hardware.sorter.isFull || !hardware.intake.intakeRunning) && !hardware.cannon.cannonFiring){
+        } else if((hardware.sorter.isFull || !hardware.intake.intakeRunning) && !hardware.cannon.cannonFiring && !isPressed){
             hardware.sorter.sortMotor.moveWithPower(0.0001);
             if(x){
                 hardware.sorter.sortMotor.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 x = false;
             }
-        }
-
-        if(gamepad.dpad_down){
-            hardware.sorter.kicker.runToPosition(hardware.sorter.kicker.getPosition(),0,0.5);
         }
     }
     public void ControlSort(Gamepad gamepad, TelemetryPacket packet){

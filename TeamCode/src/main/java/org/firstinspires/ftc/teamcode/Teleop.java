@@ -59,7 +59,7 @@ public class Teleop extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
-        robotContainer = new RobotContainer(hardwareMap,telemetry,Color.Red);
+        robotContainer = new RobotContainer(hardwareMap,telemetry);
         double reduction = 0.2;
         waitForStart();
         while(!robotContainer.hardware.camera.PickOrder(gamepad2)){
@@ -72,6 +72,11 @@ public class Teleop extends LinearOpMode {
             robotContainer.ControlSort(gamepad2, pack);
             robotContainer.ControlCannon(gamepad2, telemetry, pack);
             robotContainer.ControlReset(gamepad2, pack);
+//            if(robotContainer.hardware.drive.getRawExternalHeading() > 0 && robotContainer.hardware.drive.getRawExternalHeading() < 0){
+//                robotContainer.hardware.camera.visionPortal.setProcessorEnabled(robotContainer.hardware.camera.ballProcessor,true);
+//            } else{
+//                robotContainer.hardware.camera.visionPortal.setProcessorEnabled(robotContainer.hardware.camera.ballProcessor,false);
+//            }
 
             if(gamepad2.left_bumper){
                 robotContainer.hardware.drive.driveWithInput(reduction * gamepad2.left_stick_x, reduction * -gamepad2.left_stick_y, reduction * gamepad2.right_stick_x, telemetry);

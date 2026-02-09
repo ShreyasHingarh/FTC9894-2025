@@ -26,12 +26,10 @@ public class OpenCVBallDetection implements VisionProcessor {
     private static final Size greenBlur = new Size(11,11);
     private static final double MIN_AREA = 500.0;
 
-    public int PurpleCount;
-    public int GreenCount;
+    public int PurpleCount = 0;
+    public int GreenCount= 0;
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        PurpleCount = 0;
-        GreenCount = 0;
     }
 
     @Override
