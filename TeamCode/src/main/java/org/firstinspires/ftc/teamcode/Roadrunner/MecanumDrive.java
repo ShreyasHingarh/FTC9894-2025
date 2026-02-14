@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -53,15 +54,12 @@ import java.util.List;
 public final class MecanumDrive {
     public static final double SPEED_REDUCTION = 1.0;
     public static boolean hasReset = false;
-    private boolean isInitialized = false;
-    private double targetHeading;
 
     // Tuning parameters (Adjust these based on your robot's weight/friction)
     // K_P: How aggressively to turn. If it oscillates, lower this.
     private static final double K_P = 1.5;
-    // MIN_SPEED: Minimum power to ensure the robot actually moves at the end
     private static final double MIN_SPEED = 0.15;
-
+    ElapsedTime timer = new ElapsedTime();
     public static class Params {
         // IMU orientation
 
@@ -99,9 +97,9 @@ public final class MecanumDrive {
         public double headingVelGain = 0.0; // shared with turn
         // Custom P-Controller Gains for AlignToTag
 
-        public double P_LATERAL = 0.04; // For X error (strafe)
-        public double P_AXIAL = 0.04;   // For Y error (forward/backward)
-        public double P_HEADING = 0.04; // For heading error (turn)
+        public double P_LATERAL = 0.05; // For X error (strafe)
+        public double P_AXIAL = 0.05;   // For Y error (forward/backward)
+        public double P_HEADING = 0.05; // For heading error (turn)
 
         // Tolerance for AlignToTag
         public double LATERAL_TOLERANCE = 1; // in inches
@@ -242,8 +240,6 @@ public final class MecanumDrive {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        // TODO: make sure your config has motors with these names (or change them)
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
@@ -254,9 +250,7 @@ public final class MecanumDrive {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-
 
         lazyImu = new LazyHardwareMapImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
@@ -567,7 +561,7 @@ public final class MecanumDrive {
         leftBack.setPower(powerThree);
         rightBack.setPower(powerFour);
     }
-    public Action Move(int Inches, double speed,Telemetry telemetry) {
+    public Action Move(double Inches, double speed,Telemetry telemetry) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -582,6 +576,7 @@ public final class MecanumDrive {
                 MoveChassisWithPower(speed,speed,speed,speed);
                 double avg = (double) (Math.abs(leftFront.getCurrentPosition()) + Math.abs(rightFront.getCurrentPosition())
                         + Math.abs(leftBack.getCurrentPosition()) + Math.abs(rightBack.getCurrentPosition())) / 4;
+                telemetry.addData("speed",speed);
                 telemetry.addData("avg", avg);
                 telemetry.update();
                 if(avg > ticks){
@@ -762,13 +757,12 @@ public final class MecanumDrive {
                 telemetry.addData("Error (Inches, Deg)", "X:%.2f, Y:%.2f, H:%.2f", errorX, errorY, Math.toDegrees(errorHeading));
                 telemetry.addData("Powers", "X:%.2f, Y:%.2f, H:%.2f", lateralPower, axialPower, turnPower);
                 telemetry.addData("Alignment Status", "X:%b, Y:%b, H:%b", isXAligned, isYAligned, isHeadingAligned);
-                telemetry.update();
                 return false; // Action is still running
             }
         };
     }
 
-    private double InchesToTicks(int inches){
-        return inches * (336/(Math.PI * 2.95276));
+    private double InchesToTicks(double inches){
+        return inches * (336/(Math.PI * 4.09449));
     }
 }

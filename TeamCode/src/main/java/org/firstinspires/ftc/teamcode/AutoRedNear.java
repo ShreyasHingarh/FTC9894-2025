@@ -1,26 +1,24 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Enums.Color;
+import org.firstinspires.ftc.teamcode.Enums.BallColor;
 
-@TeleOp
-public class Teleop extends LinearOpMode {
+@Autonomous
+public class AutoRedNear extends LinearOpMode {
+
     RobotContainer robotContainer;
-    TelemetryPacket pack;
-
-    /// Integrate it into the rest of the code (fix the isorter order) (add functionality to run either order)
-    /// dynamic cannon power using april tag
-    /// Align to tag from far away
-    /// create the paths for the auto
+    //move out
+    //see pattern to shoot
+    //shoot the 3
+    //intake next 3
+    //shoot the next 3 aligning to apriltag
+    //intake next 3
+    //shoot the next 3 aligning to apriltag
+    //move out
     private void showTelemetry(){
-        telemetry.addData("degrees", robotContainer.hardware.sorter.sortMotor.getPosition());
-        telemetry.addData("cannonFiring?", robotContainer.hardware.cannon.cannonFiring);
-        telemetry.addData("order 1", robotContainer.hardware.camera.Order[0]);
-        telemetry.addData("order 2", robotContainer.hardware.camera.Order[1]);
-        telemetry.addData("order 3", robotContainer.hardware.camera.Order[2]);
         telemetry.addData("isPressed", robotContainer.isPressed);
         telemetry.addData("LaunchState", robotContainer.hardware.sorter.launchState);
         telemetry.addData("AutoLaunchState", robotContainer.hardware.sorter.autoLaunch);
@@ -44,7 +42,7 @@ public class Teleop extends LinearOpMode {
         telemetry.addData("color 3 r",c[0]);
         telemetry.addData("color 3 g",c[1]);
         telemetry.addData("color 3 b",c[2]);
-        telemetry.addData("color 3 hue",c[3]);
+        telemetry.addData("color 3 a",c[3]);
 
         telemetry.addData("Color 1", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color1));
         telemetry.addData("Color 2", robotContainer.hardware.sorter.sensorSeesBall(robotContainer.hardware.sorter.color2));
@@ -54,37 +52,19 @@ public class Teleop extends LinearOpMode {
         telemetry.addData("hold 0", robotContainer.hardware.sorter.holder[0]);
         telemetry.addData("hold 1", robotContainer.hardware.sorter.holder[1]);
         telemetry.addData("hold 2", robotContainer.hardware.sorter.holder[2]);
-
-        telemetry.update();
     }
     @Override
     public void runOpMode() throws InterruptedException {
         robotContainer = new RobotContainer(hardwareMap,telemetry);
-        double reduction = 0.2;
+        robotContainer.hardware.sorter.holder[0] = BallColor.Green;
+        robotContainer.hardware.sorter.holder[1] = BallColor.Purple;
+        robotContainer.hardware.sorter.holder[2] = BallColor.Purple;
+        robotContainer.hardware.sorter.isFull = true;
         waitForStart();
-        while(!robotContainer.hardware.camera.PickOrder(gamepad2)){
-
-        }
-        while(gamepad2.x || gamepad2.b || gamepad2.a){
-
-        }
-        while (opModeIsActive()) {
-            robotContainer.ControlSort(gamepad2, pack);
-            robotContainer.ControlCannon(gamepad2, telemetry, pack);
-            robotContainer.ControlReset(gamepad2, pack);
-//            if(robotContainer.hardware.drive.getRawExternalHeading() > 0 && robotContainer.hardware.drive.getRawExternalHeading() < 0){
-//                robotContainer.hardware.camera.visionPortal.setProcessorEnabled(robotContainer.hardware.camera.ballProcessor,true);
-//            } else{
-//                robotContainer.hardware.camera.visionPortal.setProcessorEnabled(robotContainer.hardware.camera.ballProcessor,false);
-//            }
-
-            if(gamepad2.left_bumper){
-                robotContainer.hardware.drive.driveWithInput(reduction * gamepad2.left_stick_x, reduction * -gamepad2.left_stick_y, reduction * gamepad2.right_stick_x, telemetry);
-            }
-            else {
-                robotContainer.hardware.drive.driveWithInput(gamepad2.left_stick_x, -gamepad2.left_stick_y, 0.7 * gamepad2.right_stick_x, telemetry);
-            }
-            showTelemetry();
+        while(opModeIsActive() && !robotContainer.AutoRedNear.Run(new TelemetryPacket())){
+            telemetry.addData("ticks", robotContainer.hardware.drive.rightFront.getCurrentPosition());
+            telemetry.addData("i",robotContainer.AutoRedNear.index);
+            telemetry.addData("power", robotContainer.hardware.cannon.cannon.getPower());
         }
         robotContainer.resetEverything();
     }

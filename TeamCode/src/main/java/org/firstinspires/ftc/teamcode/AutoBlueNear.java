@@ -1,18 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.teamcode.Enums.BallColor;
-import org.firstinspires.ftc.teamcode.Enums.Color;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous
-public class AutoBlue extends LinearOpMode {
+public class AutoBlueNear extends LinearOpMode {
     RobotContainer robotContainer;
 
     @Override
@@ -23,8 +17,8 @@ public class AutoBlue extends LinearOpMode {
         robotContainer.hardware.sorter.holder[2] = BallColor.Purple;
         robotContainer.hardware.sorter.isFull = true;
         waitForStart();
-        while(opModeIsActive() && !robotContainer.AutoBlue.Run(new TelemetryPacket())){
-            telemetry.addData("i",robotContainer.AutoRed.index);
+        while(opModeIsActive() && !robotContainer.AutoBlueNear.Run(new TelemetryPacket())){
+            telemetry.addData("i",robotContainer.AutoBlueNear.index);
         }
         robotContainer.resetEverything();
     }

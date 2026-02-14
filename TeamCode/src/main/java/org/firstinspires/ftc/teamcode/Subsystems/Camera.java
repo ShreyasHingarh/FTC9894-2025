@@ -74,18 +74,27 @@ public class Camera {
                 return new double[] {detection.id, detection.robotPose.getPosition().x,detection.robotPose.getPosition().y,
                         detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES), detection.ftcPose.range, detection.ftcPose.yaw};
             }
-
-//            if (detection.metadata != null) {
-//
-//            } else {
-//                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-//                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-//            }
             return new double[] {detection.id};
         }
         return new double[]{-1.0};
     }
-
+    public double[] returnTarget(Telemetry telemetry, Color color){
+        double[] data = telemetryAprilTag(telemetry);
+        if(data[0] == -1) return new double[] {};
+        if(color == Color.Red){
+            if(data[0] != 24) return new double[] {};
+            if(data[4] > 85){
+                return new double [] {38.6,14.2, 64.51};
+            }
+            return new double[] {-25,11,48};
+        }
+        if(data[0] != 20) return new double[] {};
+        //blue
+        if(data[4] > 85){
+            return new double[] {38.6,14.2, 64.51};
+        }
+        return new double[] {-25,11,48};
+    }
     public Action setOrderFromTag(Telemetry telemetry){
         return new Action() {
             @Override
@@ -121,12 +130,12 @@ public class Camera {
     }
     public double getCannonPower(Telemetry telemetry){
         double[] data = telemetryAprilTag(telemetry);
-        if(data[0] != 24 || data[0] != 20) return -0.8;
+        if(data[0] != 24 && data[0] != 20) return -0.83;
         if(data[4] > 100){
             return -1;
         } else if(data[4] > 70){
-            return -0.87;
+            return -0.9;
         }
-        return -0.8;
+        return -0.83;
     }
 }

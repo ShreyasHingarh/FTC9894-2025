@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Enums.AutoLaunch;
 import org.firstinspires.ftc.teamcode.Enums.BallColor;
 import org.firstinspires.ftc.teamcode.Enums.Color;
 import org.firstinspires.ftc.teamcode.Enums.Fire;
+import org.firstinspires.ftc.teamcode.Enums.IntakeStates;
 import org.firstinspires.ftc.teamcode.Enums.LaunchStates;
 
 public class RobotContainer {
@@ -24,10 +25,16 @@ public class RobotContainer {
     private boolean shootBasedOnOpenCVOrder;
     public Fire fireState = Fire.CannonOn;
     public Hardware hardware;
-    public ActionRunner AutoRed;
-    public ActionRunner AutoBlue;
+    public ActionRunner AutoRedFar;
+    public ActionRunner AutoBlueFar;
+    public boolean checkTag = false;
+    public double[] Target;
+    public ActionRunner AutoRedNear;
+    public ActionRunner AutoBlueNear;
+    public IntakeStates intakeStates;
     private ElapsedTime timer = new ElapsedTime();
-    public Action time = telemetryPacket1 -> timer.milliseconds() > 5000;
+    private int Counter = 0;
+    public Action time = telemetryPacket1 -> timer.milliseconds() > 500;
     public Action resetTime = telemetryPacket -> {
         timer.reset();
         return true;
@@ -35,67 +42,98 @@ public class RobotContainer {
 
     public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry){
         hardware = new Hardware(hardwareMap, telemetry);
-        AutoRed = new ActionRunner(telemetry
-                , hardware.sorter.reset()
-                , hardware.drive.Move(35, -0.5, telemetry)
-                , hardware.drive.Turn(60, 0.25, telemetry)
+        intakeStates = IntakeStates.Forward;
+        AutoRedNear = new ActionRunner(telemetry
+               // , hardware.sorter.reset()
+                , hardware.drive.Move(43, -0.4, telemetry)
+                , hardware.drive.Turn(50, 0.4, telemetry)
                 , hardware.camera.setOrderFromTag(telemetry)
+                , hardware.drive.Turn(-50, 0.4, telemetry)
+                , hardware.cannon.cannonFireAuto(hardware,telemetry)
+                , resetTime
+                , time
+                , hardware.sorter.launch(hardware)
+                , hardware.cannon.cannonStop()
+                , hardware.drive.Move(4, 0.2, telemetry)
                 , hardware.drive.Turn(-45, 0.25, telemetry)
-                , hardware.cannon.cannonFire(-1)
-                , hardware.sorter.launch(hardware)
-                , hardware.cannon.cannonStop()
-                , hardware.drive.Move(5,-0.5,telemetry)
-                , hardware.drive.Turn(40,0.25,telemetry)
+                , hardware.drive.Move(12, 0.1,telemetry)
                 , IntakeThree(telemetry)
-                , hardware.drive.Turn(-40,0.25,telemetry)
-                , hardware.drive.Move(5,0.5,telemetry)
-                , hardware.drive.AlignToTag(hardware, new double[] { -25,11,40}, telemetry)
-                , hardware.cannon.cannonFire(-1)
-                , hardware.sorter.launch(hardware)
-                , hardware.cannon.cannonStop()
-                , hardware.drive.Strafe(15,-0.5,telemetry)
-                , hardware.sorter.spinSorterToIntake(0)
+//                , hardware.drive.Turn(-40, 0.25, telemetry)
+//                , hardware.drive.Move(5, 0.5, telemetry)
+//                , hardware.drive.AlignToTag(hardware, new double[]{-25, 11, 40}, telemetry)
+//                , hardware.cannon.cannonFireAuto(hardware,telemetry)
+//                , hardware.sorter.launch(hardware)
+//                , hardware.cannon.cannonStop()
+//                , hardware.drive.Strafe(15, -0.5, telemetry)
+//                , hardware.sorter.spinSorterToIntake(0)
                 , hardware.drive.reset(telemetry)
                 , hardware.sorter.reset()
         );
+        AutoRedFar = new ActionRunner(telemetry,
+                time);
 
-        AutoBlue = new ActionRunner(telemetry
-                , hardware.sorter.reset()
-                , hardware.drive.Move(35, -0.5, telemetry)
-                , hardware.drive.Turn(-60, 0.25, telemetry)
-                , hardware.camera.setOrderFromTag(telemetry)
-                , hardware.drive.Turn(70, 0.25, telemetry)
-                //
+//        AutoBlueNear = new ActionRunner(telemetry
+//                , hardware.sorter.reset()
+//                , hardware.drive.Move(35, -0.5, telemetry)
+//                , hardware.drive.Turn(-60, 0.25, telemetry)
+//                , hardware.camera.setOrderFromTag(telemetry)
+//                , hardware.drive.Turn(70, 0.25, telemetry)
+//                //
 //                ,time
-                , hardware.cannon.cannonFire(-1)
-                , hardware.sorter.launch(hardware)
-                , hardware.cannon.cannonStop()
-                , hardware.drive.Strafe(15,0.5,telemetry)
-                , hardware.sorter.spinSorterToIntake(0)
-                , hardware.drive.reset(telemetry)
-                , hardware.sorter.reset());
+//                , hardware.cannon.cannonFire(-1)
+//                , hardware.sorter.launch(hardware)
+//                , hardware.cannon.cannonStop()
+//                , hardware.drive.Strafe(15,0.5,telemetry)
+//                , hardware.sorter.spinSorterToIntake(0)
+//                , hardware.drive.reset(telemetry)
+//                , hardware.sorter.reset());
+
     }
 
     public Action IntakeThree(Telemetry telemetry){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                hardware.drive.driveWithInput(0,0.1,0, telemetry);
                 hardware.intake.Run().run(telemetryPacket);
-                if(!hardware.sorter.isFull) {
-                    hardware.sorter.organizeSorter(telemetryPacket);
-                    return false;
+                hardware.sorter.organizeSorter(telemetryPacket);
+                switch(intakeStates){
+                    case Forward:
+                        if(hardware.drive.Move(2,0.1,telemetry).run(telemetryPacket)){
+                            intakeStates = IntakeStates.Wait;
+                            timer.reset();
+                        }
+                        break;
+                    case Wait:
+                        if(timer.milliseconds() > 600){
+                            Counter++;
+                            if(Counter >= 3){
+                                intakeStates = IntakeStates.Reset;
+                            } else{
+                                intakeStates = IntakeStates.Forward;
+                            }
+                        }
+                        break;
+                    case Reset:
+                        hardware.drive.reset(telemetry).run(telemetryPacket);
+                        intakeStates = IntakeStates.Wait;
+                        timer.reset();
+                        if(Counter == 4){
+                            hardware.intake.Stop().run(telemetryPacket);
+                            Counter = 0;
+                            intakeStates = IntakeStates.Forward;
+                            return true;
+                        }
+                        break;
                 }
-                hardware.drive.reset(telemetry).run(telemetryPacket);
-                hardware.intake.Stop().run(telemetryPacket);
-                return true;
+                return false;
             }
         };
     }
 
-    public void ControlCannon(Gamepad gamepad, Telemetry telemetry, TelemetryPacket packet){
+    public void ControlCannon(Gamepad gamepad, Telemetry telemetry, TelemetryPacket packet, Color color){
         if(gamepad.a && !isPressed){
-            fireState = Fire.CannonOn;
+            fireState = Fire.AutoAlign;
+            checkTag = false;
             isPressed = true;
         }
 //        else if(false && gamepad.right_bumper && !isPressed){
@@ -112,6 +150,23 @@ public class RobotContainer {
                 fireState = Fire.ResetKicker;
             }
             switch (fireState){
+                case AutoAlign:
+                    double[] target = hardware.camera.returnTarget(telemetry, color);
+                    if(target.length == 0 && !checkTag){
+                        hardware.sorter.autoLaunch = AutoLaunch.reset;
+                        hardware.sorter.launchState = LaunchStates.MoveSort;
+                        isPressed = false;
+                        fireState = Fire.CannonOn;
+                        hardware.drive.driveWithInput(0,0,0,telemetry);
+                    } else{
+                        Target = target;
+                        checkTag = true;
+                    }
+
+                    if(checkTag && hardware.drive.AlignToTag(hardware, Target, telemetry).run(new TelemetryPacket())) {
+                        fireState = Fire.CannonOn;
+                    }
+                    break;
                 case CannonOn:
                     hardware.cannon.cannonFire(hardware.camera.getCannonPower(telemetry)).run(packet);
                     fireState = Fire.Fire;
@@ -124,7 +179,7 @@ public class RobotContainer {
                 case CannonOff:
                     hardware.cannon.cannonStop().run(packet);
                     isPressed = false;
-                    fireState = Fire.CannonOn;
+                    fireState = Fire.AutoAlign;
                     break;
                 case ResetKicker:
                     if(hardware.sorter.kicker.runToPosition(hardware.sorter.kicker.getPosition(),0,1)){
@@ -136,7 +191,7 @@ public class RobotContainer {
                         hardware.sorter.autoLaunch = AutoLaunch.reset;
                         hardware.sorter.launchState = LaunchStates.MoveSort;
                         isPressed = false;
-                        fireState = Fire.CannonOn;
+                        fireState = Fire.AutoAlign;
                     }
                     break;
             }

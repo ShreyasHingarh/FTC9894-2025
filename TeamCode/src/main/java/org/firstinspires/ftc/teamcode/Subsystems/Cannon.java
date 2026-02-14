@@ -11,6 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.Subsystems.Wrappers.DcMotorWrapper;
 
 public class Cannon {
@@ -31,6 +34,17 @@ public class Cannon {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 cannon.moveWithPower(power);
+                cannonFiring = true;
+                return true;
+            }
+        };
+    }
+    public Action cannonFireAuto(Hardware hardware, Telemetry telemetry) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                double x = hardware.camera.getCannonPower(telemetry);
+                cannon.moveWithPower(x);
                 cannonFiring = true;
                 return true;
             }

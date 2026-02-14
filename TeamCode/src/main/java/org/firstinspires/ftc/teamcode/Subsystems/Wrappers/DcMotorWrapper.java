@@ -42,7 +42,6 @@ public class DcMotorWrapper {
         moveWithPower(velocity);
         if(Math.abs(motor.getCurrentPosition()) > deg) {
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             moveWithPower(0);
             Reset = false;
             return true;
@@ -89,7 +88,7 @@ public class DcMotorWrapper {
         motor.setTargetPosition(position);
         motor.setPower(power);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        return Math.abs(currentPosition - position) <= 2;
+        return Math.abs(currentPosition - position) <= 1;
     }
     public void setDirection(DcMotorSimple.Direction d) {
         motor.setDirection(d);

@@ -31,8 +31,6 @@ public class Sorter {
         BallColor.None,
         BallColor.None
     };
-    public final int KICKERREST = 0;
-    public final int KICKERKICK = 35;
     public final double KICKERSPEED = 1;
     private final double SortSpeed = 0.2;
 
@@ -48,6 +46,7 @@ public class Sorter {
         sortMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         sortMotor.runToPosition(sortMotor.getPosition(),0, 0.1);
         kicker = new DcMotorWrapper(hardwareMap,"kicker",0,0,0);
+        kicker.setDirection(DcMotorSimple.Direction.REVERSE);
         color1 = hardwareMap.get(ColorSensor.class, "color1");
         color1.enableLed(true);
         color2 = hardwareMap.get(ColorSensor.class, "color2");
@@ -257,16 +256,28 @@ public class Sorter {
                     case MoveSort:
                         if(spinSorterToLaunch(position).run(telemetryPacket)){
                             launchState = LaunchStates.kickerLaunch;
+                            timer.reset();
                         }
                         break;
                     case kickerLaunch:
-                        if(kicker.runToPosition(kicker.getPosition(),KICKERKICK,KICKERSPEED)){
+                        kicker.moveWithPower(1);
+                        if(timer.milliseconds() > 250){
                             launchState = LaunchStates.kickerReset;
+                            timer.reset();
                         }
                         break;
                     case kickerReset:
-                        if(kicker.runToPosition(kicker.getPosition(),KICKERREST,KICKERSPEED)){
+                        kicker.moveWithPower(-1);
+                        if(timer.milliseconds() > 250){
+                            launchState = LaunchStates.wait;
+                            kicker.moveWithPower(0);
+                            timer.reset();
+                        }
+                        break;
+                    case wait:
+                        if(timer.milliseconds() > 100){
                             launchState = LaunchStates.MoveSort;
+                            timer.reset();
                             holder[position] = BallColor.None;
                             isFull = false;
                             return true;

@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.Roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Camera;
 
@@ -11,13 +12,13 @@ import org.firstinspires.ftc.teamcode.Subsystems.Camera;
 public class TestAutoAlign extends LinearOpMode{
     @Override
     public void runOpMode() throws  InterruptedException{
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
-        Camera camera = new Camera(hardwareMap);
+        Hardware hardware = new Hardware(hardwareMap,telemetry);
+        //Camera camera = new Camera(hardwareMap);
         boolean x = false;
         waitForStart();
-        double[] target = new double[]{ -25,11,40};
+        double[] target = new double[]{ -25,11,48};
         while(opModeIsActive()){
-            double[] data = camera.telemetryAprilTag(telemetry);
+            double[] data = hardware.camera.telemetryAprilTag(telemetry);
             telemetry.addData("id",data[0]);
             if(data.length > 1){
                 telemetry.addData("x", data[1]);
@@ -31,9 +32,9 @@ public class TestAutoAlign extends LinearOpMode{
                 x = true;
             }
 
-//            if(x){
-//                x = !drive.AlignToTag(data, target,telemetry).run(new TelemetryPacket());
-//            }
+            if(x){
+                x = !hardware.drive.AlignToTag(hardware, target,telemetry).run(new TelemetryPacket());
+            }
             telemetry.update();
         }
     }

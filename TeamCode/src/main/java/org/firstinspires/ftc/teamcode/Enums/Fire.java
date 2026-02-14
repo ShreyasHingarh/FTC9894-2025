@@ -3,5 +3,5 @@ package org.firstinspires.ftc.teamcode.Enums;
 public enum Fire {
     CannonOn,
     Fire,
-    Reset, ResetSorter, ResetKicker, CannonOff
+    Reset, ResetSorter, ResetKicker, AutoAlign, CannonOff
 }
