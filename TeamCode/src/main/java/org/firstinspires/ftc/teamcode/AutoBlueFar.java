@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.Enums.BallColor;
 
 @Autonomous
-public class AutoRedNear extends LinearOpMode {
+public class AutoBlueFar extends LinearOpMode {
 
     RobotContainer robotContainer;
     @Override
@@ -18,9 +18,9 @@ public class AutoRedNear extends LinearOpMode {
         robotContainer.hardware.sorter.holder[2] = BallColor.Purple;
         robotContainer.hardware.sorter.isFull = true;
         waitForStart();
-        while(opModeIsActive() && !robotContainer.AutoRedNear.Run(new TelemetryPacket())){
+        while(opModeIsActive() && !robotContainer.AutoBlueFar.Run(new TelemetryPacket())){
             telemetry.addData("ticks", robotContainer.hardware.drive.rightFront.getCurrentPosition());
-            telemetry.addData("i",robotContainer.AutoRedNear.index);
+            telemetry.addData("i",robotContainer.AutoBlueFar.index);
             telemetry.addData("power", robotContainer.hardware.cannon.cannon.getPower());
         }
         robotContainer.resetEverything();

@@ -57,10 +57,6 @@ public class TeleopRed extends LinearOpMode {
         telemetry.addData("hold 0", robotContainer.hardware.sorter.holder[0]);
         telemetry.addData("hold 1", robotContainer.hardware.sorter.holder[1]);
         telemetry.addData("hold 2", robotContainer.hardware.sorter.holder[2]);
-
-        telemetry.addData("0",robotContainer.Target[0]);
-        telemetry.addData("1",robotContainer.Target[1]);
-        telemetry.addData("2",robotContainer.Target[2]);
         telemetry.update();
     }
     @Override

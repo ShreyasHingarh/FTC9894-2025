@@ -1,14 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Enums.AutoLaunch;
 import org.firstinspires.ftc.teamcode.Enums.Color;
+import org.firstinspires.ftc.teamcode.Enums.Fire;
+import org.firstinspires.ftc.teamcode.Enums.LaunchStates;
 
 @TeleOp
-public class TeleopBlue extends LinearOpMode{
+public class TeleopBlue extends LinearOpMode {
     RobotContainer robotContainer;
     TelemetryPacket pack;
 
@@ -55,28 +57,36 @@ public class TeleopBlue extends LinearOpMode{
         telemetry.addData("hold 0", robotContainer.hardware.sorter.holder[0]);
         telemetry.addData("hold 1", robotContainer.hardware.sorter.holder[1]);
         telemetry.addData("hold 2", robotContainer.hardware.sorter.holder[2]);
-
         telemetry.update();
     }
     @Override
     public void runOpMode() throws InterruptedException {
-        robotContainer = new RobotContainer(hardwareMap, telemetry);
+        robotContainer = new RobotContainer(hardwareMap,telemetry);
         double reduction = 0.2;
         waitForStart();
-        while (!robotContainer.hardware.camera.PickOrder(gamepad2)) {
+        while(!robotContainer.hardware.camera.PickOrder(gamepad2)){
 
         }
-        while (gamepad2.x || gamepad2.b || gamepad2.a) {
+        while(gamepad2.x || gamepad2.b || gamepad2.a){
 
         }
         while (opModeIsActive()) {
             robotContainer.ControlSort(gamepad2, pack);
             robotContainer.ControlCannon(gamepad2, telemetry, pack, Color.Blue);
             robotContainer.ControlReset(gamepad2, pack);
-            if (gamepad2.left_bumper) {
+            if(gamepad2.left_bumper && !robotContainer.checkTag){
                 robotContainer.hardware.drive.driveWithInput(reduction * gamepad2.left_stick_x, reduction * -gamepad2.left_stick_y, reduction * gamepad2.right_stick_x, telemetry);
-            } else {
+            }
+            else if(!robotContainer.checkTag){
                 robotContainer.hardware.drive.driveWithInput(gamepad2.left_stick_x, -gamepad2.left_stick_y, 0.7 * gamepad2.right_stick_x, telemetry);
+            }
+
+            if(robotContainer.checkTag && (gamepad2.left_stick_x != 0 || gamepad2.left_stick_y != 0 || gamepad2.right_stick_x != 0)){
+                robotContainer.checkTag = false;
+                robotContainer.hardware.sorter.autoLaunch = AutoLaunch.reset;
+                robotContainer.hardware.sorter.launchState = LaunchStates.MoveSort;
+                robotContainer.isPressed = false;
+                robotContainer.fireState = Fire.CannonOn;
             }
             showTelemetry();
         }

@@ -32,7 +32,7 @@ public class Sorter {
         BallColor.None
     };
     public final double KICKERSPEED = 1;
-    private final double SortSpeed = 0.2;
+    private final double SortSpeed = 0.15;
 
     private final ElapsedTime timer;
     public int currentPosition = 0;
@@ -40,6 +40,8 @@ public class Sorter {
     public boolean isFull = false;
     public int indexToSpinTo = -1;
     public int[] orderToLaunch = new int[] {-1,-1,-1};
+
+    boolean hasWaited = false;
 
     public Sorter(HardwareMap hardwareMap){
         sortMotor = new DcMotorWrapper(hardwareMap, "sorter", 0,0,0);
@@ -255,28 +257,36 @@ public class Sorter {
                 switch(launchState){
                     case MoveSort:
                         if(spinSorterToLaunch(position).run(telemetryPacket)){
-                            launchState = LaunchStates.kickerLaunch;
+                            launchState = LaunchStates.wait;
+                            hasWaited = false;
                             timer.reset();
                         }
                         break;
                     case kickerLaunch:
                         kicker.moveWithPower(1);
-                        if(timer.milliseconds() > 250){
+                        if(timer.milliseconds() > 350){
                             launchState = LaunchStates.kickerReset;
                             timer.reset();
                         }
                         break;
                     case kickerReset:
                         kicker.moveWithPower(-1);
-                        if(timer.milliseconds() > 250){
+                        if(timer.milliseconds() > 350){
                             launchState = LaunchStates.wait;
+                            hasWaited = true;
                             kicker.moveWithPower(0);
                             timer.reset();
                         }
                         break;
                     case wait:
-                        if(timer.milliseconds() > 100){
+                        if(timer.milliseconds() > 500){
+                            if(!hasWaited){
+                                launchState = LaunchStates.kickerLaunch;
+                                timer.reset();
+                                break;
+                            }
                             launchState = LaunchStates.MoveSort;
+                            hasWaited = false;
                             timer.reset();
                             holder[position] = BallColor.None;
                             isFull = false;
