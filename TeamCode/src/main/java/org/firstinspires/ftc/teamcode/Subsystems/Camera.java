@@ -91,9 +91,9 @@ public class Camera {
         if(data[0] != 20) return new double[] {};
         //blue
         if(data[4] > 85){
-            return new double[] {38.6,14.2, 64.51};
+            return new double[] {39.2481,-11.1437, 117.6506};
         }
-        return new double[] {-25,11,48};
+        return new double[] {-13.9776,-8.9211,135.8691};
     }
     public Action setOrderFromTag(Telemetry telemetry){
         return new Action() {
@@ -136,6 +136,6 @@ public class Camera {
         } else if(data[4] > 70){
             return -0.9;
         }
-        return -0.83;
+        return -0.85;
     }
 }

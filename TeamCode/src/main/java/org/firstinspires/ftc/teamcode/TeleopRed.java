@@ -61,7 +61,7 @@ public class TeleopRed extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
-        robotContainer = new RobotContainer(hardwareMap,telemetry);
+        robotContainer = new RobotContainer(hardwareMap,telemetry, gamepad2);
         double reduction = 0.2;
         waitForStart();
         while(!robotContainer.hardware.camera.PickOrder(gamepad2)){

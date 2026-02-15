@@ -19,6 +19,7 @@ public class TeleopBlue extends LinearOpMode {
     /// Align to tag from far away
     /// create the paths for the auto
     private void showTelemetry(){
+        telemetry.addData("degreeskicker", robotContainer.hardware.sorter.kicker.getPosition());
         telemetry.addData("degrees", robotContainer.hardware.sorter.sortMotor.getPosition());
         telemetry.addData("cannonFiring?", robotContainer.hardware.cannon.cannonFiring);
         telemetry.addData("order 1", robotContainer.hardware.camera.Order[0]);
@@ -61,7 +62,7 @@ public class TeleopBlue extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
-        robotContainer = new RobotContainer(hardwareMap,telemetry);
+        robotContainer = new RobotContainer(hardwareMap,telemetry, gamepad2);
         double reduction = 0.2;
         waitForStart();
         while(!robotContainer.hardware.camera.PickOrder(gamepad2)){

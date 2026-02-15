@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
@@ -48,7 +49,10 @@ public class Sorter {
         sortMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         sortMotor.runToPosition(sortMotor.getPosition(),0, 0.1);
         kicker = new DcMotorWrapper(hardwareMap,"kicker",0,0,0);
+        PIDFCoefficients pid = kicker.motor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        kicker.motor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(pid.p * 2, pid.i, pid.d,pid.f));
         kicker.setDirection(DcMotorSimple.Direction.REVERSE);
+        kicker.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
         color1 = hardwareMap.get(ColorSensor.class, "color1");
         color1.enableLed(true);
         color2 = hardwareMap.get(ColorSensor.class, "color2");
@@ -258,36 +262,51 @@ public class Sorter {
                     case MoveSort:
                         if(spinSorterToLaunch(position).run(telemetryPacket)){
                             launchState = LaunchStates.wait;
+                            kicker.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                            kicker.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
                             hasWaited = false;
                             timer.reset();
                         }
                         break;
                     case kickerLaunch:
-                        kicker.moveWithPower(1);
-                        if(timer.milliseconds() > 350){
+                        // High-speed burst forward
+                        kicker.moveWithPower(1.0);
+                        if (Math.abs(kicker.getPosition()) >= 4 || timer.milliseconds() > 250) {
+                            kicker.moveWithPower(0);
                             launchState = LaunchStates.kickerReset;
                             timer.reset();
                         }
                         break;
+
                     case kickerReset:
-                        kicker.moveWithPower(-1);
-                        if(timer.milliseconds() > 350){
+                        // Drive BACKWARD at a lower power into the mechanical stop
+                        // 0.3 power is enough to move it but won't strip gears against the stop
+                        kicker.moveWithPower(-0.8);
+
+                        // We stay in this state for a fixed window to ensure it's pressed back
+                        if (timer.milliseconds() > 300) {
+                            kicker.moveWithPower(0);
+                            kicker.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                            kicker.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
                             launchState = LaunchStates.wait;
                             hasWaited = true;
-                            kicker.moveWithPower(0);
                             timer.reset();
                         }
                         break;
                     case wait:
-                        if(timer.milliseconds() > 500){
+                        if(timer.milliseconds() > 300){
                             if(!hasWaited){
                                 launchState = LaunchStates.kickerLaunch;
                                 timer.reset();
+                                kicker.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                                kicker.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
                                 break;
                             }
                             launchState = LaunchStates.MoveSort;
                             hasWaited = false;
                             timer.reset();
+                            kicker.SetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                            kicker.SetMode(DcMotor.RunMode.RUN_USING_ENCODER);
                             holder[position] = BallColor.None;
                             isFull = false;
                             return true;

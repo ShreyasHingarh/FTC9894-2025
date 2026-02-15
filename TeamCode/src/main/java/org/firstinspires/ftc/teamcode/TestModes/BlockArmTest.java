@@ -53,14 +53,14 @@ public class BlockArmTest extends LinearOpMode {
                         break;
                     case kickerLaunch:
                         motor.moveWithPower(1);
-                        if(timer.milliseconds() > 300){
+                        if(timer.milliseconds() > 250){
                             timer.reset();
                             states = LaunchStates.kickerReset;
                         }
                         break;
                     case kickerReset:
                         motor.moveWithPower(-1);
-                        if(timer.milliseconds() > 300){
+                        if(timer.milliseconds() > 250){
                             motor.moveWithPower(0);
                             timer.reset();
                             states = LaunchStates.wait;

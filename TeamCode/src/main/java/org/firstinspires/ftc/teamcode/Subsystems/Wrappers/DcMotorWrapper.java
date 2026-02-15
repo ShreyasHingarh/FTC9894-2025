@@ -22,6 +22,7 @@ public class DcMotorWrapper {
     public DcMotorWrapper(HardwareMap hardwareMap, String thing, double kp,double ki, double kd) {
         motor = hardwareMap.get(DcMotorEx.class, thing);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         timer = new ElapsedTime();
         Kp = kp;
@@ -41,7 +42,6 @@ public class DcMotorWrapper {
         }
         moveWithPower(velocity);
         if(Math.abs(motor.getCurrentPosition()) > deg) {
-            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             moveWithPower(0);
             Reset = false;
             return true;

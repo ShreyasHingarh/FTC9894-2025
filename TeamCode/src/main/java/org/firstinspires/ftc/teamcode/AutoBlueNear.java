@@ -12,7 +12,7 @@ public class AutoBlueNear extends LinearOpMode {
     RobotContainer robotContainer;
     @Override
     public void runOpMode() throws InterruptedException {
-        robotContainer = new RobotContainer(hardwareMap,telemetry);
+        robotContainer = new RobotContainer(hardwareMap,telemetry,gamepad2);
         robotContainer.hardware.sorter.holder[0] = BallColor.Green;
         robotContainer.hardware.sorter.holder[1] = BallColor.Purple;
         robotContainer.hardware.sorter.holder[2] = BallColor.Purple;

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.speech.RecognitionService;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -40,7 +42,7 @@ public class RobotContainer {
         return true;
     };
 
-    public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry){
+    public RobotContainer(HardwareMap hardwareMap, Telemetry telemetry, Gamepad gamepad){
         hardware = new Hardware(hardwareMap, telemetry);
         intakeStates = IntakeStates.Forward;
         AutoRedNear = new ActionRunner(telemetry
@@ -53,13 +55,13 @@ public class RobotContainer {
                 , hardware.cannon.cannonStop()
                 , hardware.drive.Turn(-45, 0.25, telemetry)
                 , hardware.drive.Move(15, 0.15,telemetry)
-                , IntakeThree(telemetry)
-                , hardware.drive.Move(24, -0.15, telemetry)
-                , hardware.drive.Turn(45, 0.25, telemetry)
-                , hardware.cannon.cannonFireAuto(hardware,telemetry)
-                , hardware.sorter.launch(hardware)
-                , hardware.cannon.cannonStop()
-                , hardware.drive.Strafe(10, -0.5, telemetry)
+//                , IntakeThree(telemetry)
+//                , hardware.drive.Move(24, -0.15, telemetry)
+//                , hardware.drive.Turn(45, 0.25, telemetry)
+//                , hardware.cannon.cannonFireAuto(hardware,telemetry)
+//                , hardware.sorter.launch(hardware)
+//                , hardware.cannon.cannonStop()
+//                , hardware.drive.Strafe(10, -0.5, telemetry)
                 , hardware.sorter.spinSorterToIntake(0)
                 , hardware.drive.reset(telemetry)
                 , hardware.sorter.reset()
@@ -170,7 +172,7 @@ public class RobotContainer {
             switch (fireState){
                 case AutoAlign:
                     double[] target = hardware.camera.returnTarget(telemetry, color);
-                    if(target.length == 0 && !checkTag){
+                    if((target == null || target.length == 0) && !checkTag){
                         hardware.sorter.autoLaunch = AutoLaunch.reset;
                         hardware.sorter.launchState = LaunchStates.MoveSort;
                         isPressed = false;
@@ -181,7 +183,14 @@ public class RobotContainer {
                         checkTag = true;
                     }
 
-                    if(checkTag && hardware.drive.AlignToTag(hardware, Target, telemetry).run(new TelemetryPacket())) {
+                    if((target == null || target.length == 0)) {
+                        hardware.sorter.autoLaunch = AutoLaunch.reset;
+                        hardware.sorter.launchState = LaunchStates.MoveSort;
+                        isPressed = false;
+                        fireState = Fire.CannonOn;
+                        hardware.drive.driveWithInput(0,0,0,telemetry);
+                    }
+                    else if(checkTag && hardware.drive.AlignToTag(hardware, Target, telemetry).run(new TelemetryPacket())) {
                         fireState = Fire.CannonOn;
                     }
                     break;
